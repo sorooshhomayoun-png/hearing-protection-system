@@ -1,0 +1,4007 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <base target="_self">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>سیستم مدیریت برنامه حفاظت شنوایی</title>
+    <meta name="description" content="سیستم جامع مدیریت برنامه حفاظت شنوایی برای پایش سلامت کارکنان">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css" rel="stylesheet" type="text/css" />
+    <style>
+        * {
+            font-family: Vazirmatn, sans-serif;
+        }
+        
+        :root {
+            --primary: #3b82f6;
+            --primary-dark: #1e40af;
+            --secondary: #10b981;
+            --accent: #8b5cf6;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --bg-light: #f8fafc;
+            --bg-dark: #1e293b;
+            --text-light: #334155;
+            --text-dark: #e2e8f0;
+            --card-light: #ffffff;
+            --card-dark: #334155;
+        }
+        
+        .light-theme {
+            --bg-color: var(--bg-light);
+            --text-color: var(--text-light);
+            --card-bg: var(--card-light);
+            --header-bg: #ffffff;
+            --footer-bg: #1e293b;
+            --border-color: #e2e8f0;
+        }
+        
+        .dark-theme {
+            --bg-color: var(--bg-dark);
+            --text-color: var(--text-dark);
+            --card-bg: var(--card-dark);
+            --header-bg: #334155;
+            --footer-bg: #0f172a;
+            --border-color: #475569;
+        }
+        
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            transition: all 0.3s ease;
+        }
+        
+        .card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+        }
+        
+        header {
+            background-color: var(--header-bg);
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        footer {
+            background-color: var(--footer-bg);
+        }
+        
+        .theme-toggle {
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .theme-toggle:hover {
+            background: var(--primary-dark);
+            transform: rotate(30deg);
+        }
+        
+        .nav-btn {
+            transition: all 0.3s ease;
+            position: relative;
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .nav-btn.active {
+            color: var(--primary);
+            background-color: rgba(59, 130, 246, 0.1);
+        }
+        
+        .nav-btn i {
+            font-size: 1.1rem;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--primary-dark);
+        }
+        
+        .btn-accent {
+            background-color: var(--accent);
+            color: white;
+        }
+        
+        .btn-accent:hover {
+            background-color: #7c3aed;
+        }
+        
+        input, select, textarea {
+            background-color: var(--card-bg);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+        }
+        
+        input:focus, select:focus, textarea:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        
+        table {
+            border: 1px solid var(--border-color);
+        }
+        
+        th {
+            background-color: var(--header-bg);
+        }
+        
+        .modal {
+            background-color: var(--card-bg);
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .pagination {
+            display: flex;
+            justify-content: center;
+            margin-top: 1rem;
+        }
+        
+        .pagination button {
+            margin: 0 0.25rem;
+            padding: 0.5rem 0.75rem;
+            border: 1px solid var(--border-color);
+            background-color: var(--card-bg);
+            border-radius: 0.375rem;
+            cursor: pointer;
+        }
+        
+        .pagination button.active {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .backup-notification {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: var(--primary);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 5px;
+            z-index: 1000;
+            display: none;
+        }
+        
+        .edit-form {
+            display: none;
+        }
+        
+        /* Login Page Styles - REDESIGNED */
+        .login-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            padding: 1rem;
+        }
+        
+        .login-card {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            padding: 2.5rem;
+            width: 100%;
+            max-width: 450px;
+        }
+        
+        .login-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+        
+        .login-logo {
+            display: flex;
+            align-items: center;
+            text-align: right;
+        }
+        
+        .logo-icon {
+            width: 60px;
+            height: 60px;
+            background: #3b82f6;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-left: 1rem;
+        }
+        
+        .logo-icon i {
+            color: white;
+            font-size: 1.8rem;
+        }
+        
+        .login-title {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        .login-title h1 {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+        
+        .login-title p {
+            color: var(--text-color);
+            opacity: 0.8;
+            font-size: 0.9rem;
+        }
+        
+        .login-form .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .login-form label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+        
+        .login-form input {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: 0.5rem;
+            transition: all 0.2s;
+            background-color: var(--card-bg);
+            color: var(--text-color);
+        }
+        
+        .login-form input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+            outline: none;
+        }
+        
+        .login-btn {
+            width: 100%;
+            padding: 0.75rem;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            color: white;
+            border: none;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .login-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+        
+        .login-error {
+            color: #ef4444;
+            font-size: 0.875rem;
+            margin-top: 0.5rem;
+            display: none;
+        }
+        
+        .form-switch {
+            text-align: center;
+            margin-top: 1rem;
+        }
+        
+        .form-switch a {
+            color: var(--primary);
+            text-decoration: none;
+            cursor: pointer;
+        }
+        
+        .form-switch a:hover {
+            text-decoration: underline;
+        }
+        
+        .frequency-inputs {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+        }
+        
+        .hearing-loss-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+        
+        .hearing-loss-table th,
+        .hearing-loss-table td {
+            border: 1px solid var(--border-color);
+            padding: 0.5rem;
+            text-align: center;
+        }
+        
+        .hearing-loss-table th {
+            background-color: var(--header-bg);
+        }
+        
+        .positive-change {
+            color: #ef4444;
+            font-weight: bold;
+        }
+        
+        .negative-change {
+            color: #10b981;
+            font-weight: bold;
+        }
+        
+        /* IMPROVED PDF Report Styles - PRINT FRIENDLY */
+        .pdf-report {
+            direction: rtl;
+            font-family: Vazirmatn, sans-serif;
+            padding: 0;
+            background: white;
+            color: #000;
+            width: 100%;
+            max-width: 210mm; /* A4 width */
+            margin: 0 auto;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            line-height: 1.4;
+            box-sizing: border-box;
+            font-size: 12px;
+            /* بهبود قابلیت چاپ */
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+        }
+        
+        @media print {
+            body {
+                margin: 0;
+                padding: 0;
+                background: white !important;
+                color: black !important;
+            }
+            
+            .pdf-report {
+                width: 100% !important;
+                max-width: 100% !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                box-shadow: none !important;
+                page-break-inside: avoid;
+                font-size: 11px !important;
+            }
+            
+            .pdf-page {
+                page-break-after: always;
+                page-break-inside: avoid;
+                break-inside: avoid;
+            }
+            
+            .pdf-page:last-child {
+                page-break-after: auto;
+            }
+            
+            .pdf-section {
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+                margin-bottom: 15px !important;
+            }
+            
+            .pdf-table {
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+            }
+            
+            .pdf-table tr {
+                page-break-inside: avoid;
+                break-inside: avoid;
+            }
+            
+            .chart-container {
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+            }
+            
+            .no-break {
+                page-break-inside: avoid;
+                break-inside: avoid;
+            }
+        }
+        
+        .pdf-page {
+            padding: 15mm;
+            min-height: 297mm; /* A4 height */
+            box-sizing: border-box;
+            position: relative;
+            page-break-after: always;
+        }
+        
+        .pdf-header {
+            text-align: center;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #3b82f6;
+            padding-bottom: 15px;
+            background: white;
+            color: #000;
+            page-break-after: avoid;
+        }
+        
+        .pdf-header h1 {
+            font-size: 20px;
+            margin: 0;
+            font-weight: 700;
+            color: #3b82f6;
+        }
+        
+        .pdf-header p {
+            margin: 8px 0 0;
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .pdf-section {
+            margin-bottom: 20px;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background: #fdfdfd;
+            page-break-inside: avoid;
+        }
+        
+        .pdf-section h2 {
+            font-size: 16px;
+            color: #3b82f6;
+            margin-bottom: 10px;
+            padding-bottom: 6px;
+            border-bottom: 1px solid #e1e5e9;
+            font-weight: 700;
+            page-break-after: avoid;
+        }
+        
+        .pdf-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10px 0;
+            font-size: 10px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+            page-break-inside: avoid;
+        }
+        
+        .pdf-table th {
+            background: #3b82f6;
+            color: white;
+            padding: 8px 6px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 10px;
+            border: 1px solid #ddd;
+        }
+        
+        .pdf-table td {
+            padding: 6px;
+            border: 1px solid #ddd;
+            text-align: center;
+            font-size: 9px;
+        }
+        
+        .pdf-table tr:nth-child(even) {
+            background-color: #f8fafc;
+        }
+        
+        .pdf-footer {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 9px;
+            color: #666;
+            padding-top: 10px;
+            border-top: 1px solid #e1e5e9;
+            position: absolute;
+            bottom: 15mm;
+            left: 15mm;
+            right: 15mm;
+        }
+        
+        .chart-container {
+            margin: 12px 0;
+            padding: 10px;
+            background: white;
+            border: 1px solid #e1e5e9;
+            border-radius: 4px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+            page-break-inside: avoid;
+            text-align: center;
+        }
+        
+        .chart-title {
+            text-align: center;
+            font-size: 14px;
+            margin-bottom: 10px;
+            color: #3b82f6;
+            font-weight: 600;
+        }
+        
+        .page-number {
+            position: absolute;
+            bottom: 10mm;
+            left: 15mm;
+            right: 15mm;
+            text-align: center;
+            font-size: 9px;
+            color: #666;
+        }
+
+        /* Custom Styles for Larger Header and Footer Changes */
+        .app-header {
+            font-size: 1.5rem !important;
+            font-weight: 700 !important;
+        }
+        
+        .app-subheader {
+            font-size: 1.1rem !important;
+        }
+        
+        .header-logo {
+            width: 50px !important;
+            height: 50px !important;
+            background: #3b82f6 !important;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 10px rgba(59, 130, 246, 0.3);
+        }
+        
+        .header-logo i {
+            font-size: 1.8rem !important;
+            color: white;
+        }
+        
+        .nav-btn {
+            font-size: 1.05rem;
+            font-weight: 500;
+        }
+        
+        .contact-creator {
+            color: #3b82f6;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+        
+        .contact-creator:hover {
+            color: #60a5fa;
+            text-decoration: underline;
+        }
+        
+        /* اضافه کردن کلاس hidden که وجود نداشت */
+        .hidden {
+            display: none !important;
+        }
+        
+        /* استایل برای نمایش بهتر اعلان‌ها */
+        .notification {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 12px 20px;
+            border-radius: 8px;
+            z-index: 10000;
+            font-weight: 500;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            animation: slideIn 0.3s ease-out;
+            max-width: 90%;
+            text-align: center;
+        }
+        
+        .notification.success {
+            background-color: #10b981;
+            color: white;
+        }
+        
+        .notification.error {
+            background-color: #ef4444;
+            color: white;
+        }
+        
+        .notification.info {
+            background-color: #3b82f6;
+            color: white;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-50%) translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(-50%) translateY(0);
+            }
+        }
+        
+        /* بهبود استایل فرم‌ها */
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+        
+        .invalid-feedback {
+            color: #ef4444;
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+            display: none;
+        }
+        
+        .is-invalid {
+            border-color: #ef4444 !important;
+        }
+        
+        /* استایل‌های جدید برای سایدبار */
+        .sidebar-toggle {
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .sidebar-toggle:hover {
+            background: var(--primary-dark);
+            transform: rotate(30deg);
+        }
+        
+        .sidebar {
+            position: fixed;
+            top: 0;
+            right: -300px;
+            width: 300px;
+            height: 100%;
+            background-color: var(--card-bg);
+            border-left: 1px solid var(--border-color);
+            transition: right 0.3s ease;
+            z-index: 1000;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        
+        .sidebar.open {
+            right: 0;
+        }
+        
+        .sidebar-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+            display: none;
+        }
+        
+        .sidebar-overlay.open {
+            display: block;
+        }
+        
+        .sidebar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .sidebar-title {
+            font-size: 1.25rem;
+            font-weight: bold;
+        }
+        
+        .sidebar-close {
+            background: none;
+            border: none;
+            color: var(--text-color);
+            font-size: 1.25rem;
+            cursor: pointer;
+        }
+        
+        .sidebar-menu {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .sidebar-menu li {
+            margin-bottom: 10px;
+        }
+        
+        .sidebar-menu a {
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            color: var(--text-color);
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .sidebar-menu a:hover {
+            background-color: rgba(59, 130, 246, 0.1);
+            color: var(--primary);
+        }
+        
+        .sidebar-menu i {
+            margin-left: 10px;
+            font-size: 1.1rem;
+        }
+
+        /* Portfolio Section Styles */
+        .portfolio-section {
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            color: white;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        
+        .portfolio-header {
+            text-align: center;
+            padding: 2rem 1rem;
+        }
+        
+        .profile-image {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            margin: 0 auto 1rem;
+            background: rgba(255, 255, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 4px solid white;
+        }
+        
+        .profile-image i {
+            font-size: 4rem;
+            color: white;
+        }
+        
+        .portfolio-content {
+            padding: 2rem;
+            background: white;
+            color: #333;
+        }
+        
+        .contact-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .contact-item {
+            display: flex;
+            align-items: center;
+            padding: 1rem;
+            background: #f8fafc;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .contact-item i {
+            font-size: 1.5rem;
+            margin-left: 1rem;
+            color: #3b82f6;
+        }
+        
+        .skills-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+        
+        .skill-item {
+            background: #f8fafc;
+            padding: 1rem;
+            border-radius: 8px;
+            text-align: center;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .skill-item i {
+            font-size: 2rem;
+            color: #3b82f6;
+            margin-bottom: 0.5rem;
+        }
+
+        /* Mobile-specific styles */
+        @media (max-width: 768px) {
+            .container {
+                padding-left: 1rem;
+                padding-right: 1rem;
+            }
+            
+            header .flex {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .header-logo-container {
+                display: flex;
+                align-items: center;
+                margin-bottom: 1rem;
+            }
+            
+            .header-actions {
+                display: flex;
+                justify-content: space-between;
+                width: 100%;
+            }
+            
+            .desktop-nav {
+                display: none !important;
+            }
+            
+            .mobile-nav {
+                display: flex;
+                flex-direction: column;
+                width: 100%;
+                margin-top: 1rem;
+            }
+            
+            .mobile-nav .nav-btn {
+                justify-content: flex-start;
+                margin-bottom: 0.5rem;
+                border-radius: 0.5rem;
+                padding: 0.75rem 1rem;
+            }
+            
+            .frequency-inputs {
+                grid-template-columns: 1fr;
+                gap: 0.5rem;
+            }
+            
+            .card {
+                padding: 1rem;
+            }
+            
+            .grid {
+                grid-template-columns: 1fr !important;
+            }
+            
+            .grid-cols-1 {
+                grid-template-columns: 1fr;
+            }
+            
+            .md\\:grid-cols-2 {
+                grid-template-columns: 1fr;
+            }
+            
+            table {
+                display: block;
+                overflow-x: auto;
+                white-space: nowrap;
+            }
+            
+            .pagination {
+                flex-wrap: wrap;
+            }
+            
+            .pagination button {
+                margin: 0.25rem;
+                padding: 0.5rem;
+            }
+            
+            .modal {
+                width: 95%;
+                max-width: 95%;
+                margin: 0 auto;
+            }
+            
+            .pdf-report {
+                width: 100%;
+                padding: 10px;
+            }
+            
+            .login-card {
+                padding: 2rem;
+            }
+            
+            .login-title h1 {
+                font-size: 1.25rem;
+            }
+            
+            .app-header {
+                font-size: 1.25rem !important;
+            }
+            
+            .app-subheader {
+                font-size: 0.9rem !important;
+            }
+            
+            .sidebar {
+                width: 85%;
+                right: -85%;
+            }
+            
+            .contact-info {
+                grid-template-columns: 1fr;
+            }
+            
+            .skills-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            /* Mobile styles for login page */
+            .login-header {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .login-logo {
+                flex-direction: column;
+                margin-bottom: 1rem;
+            }
+            
+            .logo-icon {
+                margin-left: 0;
+                margin-bottom: 1rem;
+            }
+        }
+
+        @media (min-width: 769px) {
+            .mobile-nav {
+                display: none !important;
+            }
+            
+            .desktop-nav {
+                display: flex;
+            }
+        }
+
+        /* Mobile navigation button */
+        .mobile-nav-toggle {
+            display: none;
+        }
+        
+        @media (max-width: 768px) {
+            .mobile-nav-toggle {
+                display: block;
+            }
+        }
+    </style>
+</head>
+<body class="light-theme min-h-screen">
+    <!-- Login Page -->
+    <div id="login-page" class="login-container">
+        <div class="login-card">
+            <!-- Redesigned Login Header -->
+            <div class="login-header">
+                <div class="login-logo">
+                    <div class="logo-icon">
+                        <i class="fas fa-headphones"></i>
+                    </div>
+                    <div>
+                        <h1 class="app-header">برنامه حفاظت شنوایی</h1>
+                        <p class="app-subheader">سیستم پایش سلامت کارکنان</p>
+                    </div>
+                </div>
+                
+                <button id="login-theme-toggle" class="theme-toggle">
+                    <i class="fas fa-moon"></i>
+                </button>
+            </div>
+            
+            <!-- Login Form -->
+            <div id="login-form-container">
+                <div class="login-title">
+                    <h1 class="app-header">ورود به سیستم</h1>
+                    <p>لطفا اطلاعات حساب کاربری خود را وارد کنید</p>
+                </div>
+                
+                <form id="login-form" class="login-form">
+                    <div class="form-group">
+                        <label for="username">نام کاربری</label>
+                        <input type="text" id="username" placeholder="نام کاربری را وارد کنید" required>
+                        <div class="invalid-feedback" id="username-error">لطفا نام کاربری را وارد کنید</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="password">رمز عبور</label>
+                        <input type="password" id="password" placeholder="رمز عبور را وارد کنید" required>
+                        <div class="invalid-feedback" id="password-error">لطفا رمز عبور را وارد کنید</div>
+                    </div>
+                    
+                    <div id="login-error" class="login-error">
+                        نام کاربری یا رمز عبور اشتباه است
+                    </div>
+                    
+                    <button type="submit" class="login-btn">
+                        <i class="fas fa-sign-in-alt ml-2"></i>ورود به سیستم
+                    </button>
+                </form>
+                
+                <div class="form-switch">
+                    <p>حساب کاربری ندارید؟ <a id="switch-to-register">ثبت نام کنید</a></p>
+                </div>
+            </div>
+            
+            <!-- Registration Form -->
+            <div id="register-form-container" class="hidden">
+                <div class="login-title">
+                    <h1 class="app-header">ایجاد حساب کاربری</h1>
+                    <p>لطفا اطلاعات مورد نیاز برای ثبت نام را وارد کنید</p>
+                </div>
+                
+                <form id="register-form" class="login-form">
+                    <div class="form-group">
+                        <label for="new-username">نام کاربری</label>
+                        <input type="text" id="new-username" placeholder="نام کاربری مورد نظر را وارد کنید" required minlength="3">
+                        <div class="invalid-feedback" id="new-username-error">نام کاربری باید حداقل ۳ کاراکتر باشد</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="new-password">رمز عبور</label>
+                        <input type="password" id="new-password" placeholder="رمز عبور را وارد کنید" required minlength="6">
+                        <div class="invalid-feedback" id="new-password-error">رمز عبور باید حداقل ۶ کاراکتر باشد</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="confirm-password">تکرار رمز عبور</label>
+                        <input type="password" id="confirm-password" placeholder="رمز عبور را مجدداً وارد کنید" required>
+                        <div class="invalid-feedback" id="confirm-password-error">رمز عبور و تکرار آن مطابقت ندارند</div>
+                    </div>
+                    
+                    <div id="register-error" class="login-error">
+                        خطا در ایجاد حساب کاربری
+                    </div>
+                    
+                    <div id="register-success" class="text-green-500 text-sm mt-2 hidden">
+                        حساب کاربری با موفقیت ایجاد شد. اکنون می‌توانید وارد شوید.
+                    </div>
+                    
+                    <button type="submit" class="login-btn">
+                        <i class="fas fa-user-plus ml-2"></i>ایجاد حساب کاربری
+                    </button>
+                </form>
+                
+                <div class="form-switch">
+                    <p>قبلاً حساب کاربری دارید؟ <a id="switch-to-login">وارد شوید</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Application (Initially Hidden) -->
+    <div id="main-app" class="hidden">
+        <!-- Header -->
+        <header class="shadow-sm">
+            <div class="container mx-auto px-4 py-4">
+                <div class="flex flex-col md:flex-row justify-between items-center">
+                    <div class="flex items-center space-x-3 space-x-reverse mb-4 md:mb-0">
+                        <div class="header-logo">
+                            <i class="fas fa-headphones"></i>
+                        </div>
+                        <div>
+                            <h1 class="app-header">برنامه حفاظت شنوایی</h1>
+                            <p class="app-subheader opacity-80">سیستم پایش سلامت کارکنان</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center space-x-4 space-x-reverse">
+                        <!-- Desktop Navigation -->
+                        <nav class="desktop-nav flex space-x-2 space-x-reverse">
+                            <button id="nav-individuals" class="nav-btn text-primary font-medium active">
+                                <i class="fas fa-users"></i>
+                                <span>افراد</span>
+                            </button>
+                            <button id="nav-measurements" class="nav-btn font-medium">
+                                <i class="fas fa-chart-line"></i>
+                                <span>اندازه‌گیری‌ها</span>
+                            </button>
+                            <button id="nav-controls" class="nav-btn font-medium">
+                                <i class="fas fa-shield-alt"></i>
+                                <span>کنترل‌ها</span>
+                            </button>
+                            <button id="nav-noise" class="nav-btn font-medium">
+                                <i class="fas fa-volume-up"></i>
+                                <span>داده‌های نویز</span>
+                            </button>
+                        </nav>
+                        
+                        <button id="theme-toggle" class="theme-toggle">
+                            <i class="fas fa-moon"></i>
+                        </button>
+                        
+                        <!-- دکمه سه نقطه برای باز کردن سایدبار -->
+                        <button id="sidebar-toggle" class="sidebar-toggle">
+                            <i class="fas fa-ellipsis-v"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Mobile Navigation -->
+                <nav id="mobile-nav" class="mobile-nav hidden mt-4">
+                    <button id="nav-individuals-mobile" class="nav-btn text-primary font-medium active">
+                        <i class="fas fa-users"></i>
+                        <span>افراد</span>
+                    </button>
+                    <button id="nav-measurements-mobile" class="nav-btn font-medium">
+                        <i class="fas fa-chart-line"></i>
+                        <span>اندازه‌گیری‌ها</span>
+                    </button>
+                    <button id="nav-controls-mobile" class="nav-btn font-medium">
+                        <i class="fas fa-shield-alt"></i>
+                        <span>کنترل‌ها</span>
+                    </button>
+                    <button id="nav-noise-mobile" class="nav-btn font-medium">
+                        <i class="fas fa-volume-up"></i>
+                        <span>داده‌های نویز</span>
+                    </button>
+                </nav>
+            </div>
+        </header>
+
+        <!-- سایدبار -->
+        <div id="sidebar-overlay" class="sidebar-overlay"></div>
+        <div id="sidebar" class="sidebar">
+            <div class="sidebar-header">
+                <h2 class="sidebar-title">منو</h2>
+                <button id="sidebar-close" class="sidebar-close">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <ul class="sidebar-menu">
+                <li>
+                    <a href="#" id="nav-individuals-sidebar">
+                        <i class="fas fa-users"></i>
+                        <span>افراد</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" id="nav-measurements-sidebar">
+                        <i class="fas fa-chart-line"></i>
+                        <span>اندازه‌گیری‌ها</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" id="nav-controls-sidebar">
+                        <i class="fas fa-shield-alt"></i>
+                        <span>کنترل‌ها</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" id="nav-noise-sidebar">
+                        <i class="fas fa-volume-up"></i>
+                        <span>داده‌های نویز</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" id="import-btn-sidebar">
+                        <i class="fas fa-upload"></i>
+                        <span>بازیابی</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" id="export-btn-sidebar">
+                        <i class="fas fa-download"></i>
+                        <span>پشتیبان‌گیری</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" id="contact-creator-sidebar">
+                        <i class="fas fa-user"></i>
+                        <span>نمایه سازنده</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" id="logout-btn-sidebar">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span>خروج از حساب کاربری</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        <main class="container mx-auto px-4 py-8">
+            <!-- Individuals Registration Section -->
+            <section id="section-individuals" class="card rounded-xl shadow-md p-4 md:p-6 mb-8 fade-in">
+                <h2 class="text-xl md:text-2xl font-bold mb-4 md:mb-6">ثبت افراد</h2>
+                
+                <!-- Add/Edit Form -->
+                <form id="individual-form" class="grid grid-cols-1 gap-4 md:gap-6 mb-6 md:mb-8">
+                    <input type="hidden" id="individual-id" name="id">
+                    
+                    <div>
+                        <label for="firstName" class="block text-sm font-medium mb-2">نام</label>
+                        <input type="text" id="firstName" name="firstName" class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary" required>
+                        <div class="invalid-feedback" id="firstName-error">لطفا نام را وارد کنید</div>
+                    </div>
+                    
+                    <div>
+                        <label for="lastName" class="block text-sm font-medium mb-2">نام خانوادگی</label>
+                        <input type="text" id="lastName" name="lastName" class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary" required>
+                        <div class="invalid-feedback" id="lastName-error">لطفا نام خانوادگی را وارد کنید</div>
+                    </div>
+                    
+                    <div>
+                        <label for="jobTitle" class="block text-sm font-medium mb-2">عنوان شغلی</label>
+                        <input type="text" id="jobTitle" name="jobTitle" class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary" required>
+                        <div class="invalid-feedback" id="jobTitle-error">لطفا عنوان شغلی را وارد کنید</div>
+                    </div>
+                    
+                    <div>
+                        <label for="factoryName" class="block text-sm font-medium mb-2">نام کارخانه</label>
+                        <input type="text" id="factoryName" name="factoryName" class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary" required>
+                        <div class="invalid-feedback" id="factoryName-error">لطفا نام کارخانه را وارد کنید</div>
+                    </div>
+                    
+                    <div>
+                        <label for="nationalCode" class="block text-sm font-medium mb-2">کد ملی</label>
+                        <input type="text" id="nationalCode" name="nationalCode" class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary" required maxlength="10" pattern="\d{10}">
+                        <div class="invalid-feedback" id="nationalCode-error">کد ملی باید ۱۰ رقم باشد</div>
+                    </div>
+                    
+                    <div class="flex flex-col md:flex-row space-y-3 md:space-y-0 space-x-0 md:space-x-3 md:space-x-reverse">
+                        <button type="submit" id="individual-submit-btn" class="btn-primary px-6 py-3 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 transition-colors">
+                            <i class="fas fa-user-plus ml-2"></i>ثبت فرد
+                        </button>
+                        <button type="button" id="individual-cancel-btn" class="hidden px-6 py-3 rounded-md border border-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                            <i class="fas fa-times ml-2"></i>لغو ویرایش
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Search Bar -->
+                <div class="mb-6">
+                    <label for="search-individual" class="block text-sm font-medium mb-2">جستجوی افراد</label>
+                    <input type="text" id="search-individual" placeholder="جستجو بر اساس نام، عنوان شغلی یا کد ملی" class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary">
+                </div>
+
+                <!-- Individuals List -->
+                <div class="mt-6 md:mt-8">
+                    <h3 class="text-lg md:text-xl font-semibold mb-4">افراد ثبت‌شده</h3>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full border">
+                            <thead>
+                                <tr class="bg-gray-50 dark:bg-gray-700">
+                                    <th class="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider">نام</th>
+                                    <th class="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider">عنوان شغلی</th>
+                                    <th class="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider">نام کارخانه</th>
+                                    <th class="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider">کد ملی</th>
+                                    <th class="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider">عملیات</th>
+                                </tr>
+                            </thead>
+                            <tbody id="individuals-list" class="divide-y divide-gray-200 dark:divide-gray-600">
+                                <!-- Individuals will be populated here -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <!-- Pagination -->
+                    <div id="individuals-pagination" class="pagination mt-4">
+                        <!-- Pagination buttons will be populated here -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- Hearing Measurements Section -->
+            <section id="section-measurements" class="card rounded-xl shadow-md p-4 md:p-6 mb-8 hidden fade-in">
+                <h2 class="text-xl md:text-2xl font-bold mb-4 md:mb-6">اندازه‌گیری‌های شنوایی</h2>
+                
+                <!-- Add/Edit Form -->
+                <form id="measurement-form" class="grid grid-cols-1 gap-4 md:gap-6 mb-6">
+                    <input type="hidden" id="measurement-id" name="id">
+                    
+                    <div>
+                        <label for="measurement-individual" class="block text-sm font-medium mb-2">انتخاب فرد</label>
+                        <select id="measurement-individual" class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary" required>
+                            <option value="">یک فرد را انتخاب کنید</option>
+                        </select>
+                        <div class="invalid-feedback" id="measurement-individual-error">لطفا یک فرد را انتخاب کنید</div>
+                    </div>
+                    
+                    <div>
+                        <label for="measurement-date" class="block text-sm font-medium mb-2">تاریخ اندازه‌گیری</label>
+                        <input type="date" id="measurement-date" class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary" max="" required>
+                        <div class="invalid-feedback" id="measurement-date-error">لطفا تاریخ معتبری انتخاب کنید</div>
+                    </div>
+
+                    <div>
+                        <h3 class="text-lg font-medium mb-2">گوش چپ (دسی‌بل)</h3>
+                        <div class="frequency-inputs">
+                            <div>
+                                <label for="left-ear-2000" class="block text-sm font-medium mb-1">2000 هرتز</label>
+                                <input type="number" id="left-ear-2000" min="0" max="120" placeholder="0-120" class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary">
+                                <div class="invalid-feedback" id="left-ear-2000-error">مقدار باید بین ۰ تا ۱۲۰ باشد</div>
+                            </div>
+                            <div>
+                                <label for="left-ear-3000" class="block text-sm font-medium mb-1">3000 هرتز</label>
+                                <input type="number" id="left-ear-3000" min="0" max="120" placeholder="0-120" class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary">
+                                <div class="invalid-feedback" id="left-ear-3000-error">مقدار باید بین ۰ تا ۱۲۰ باشد</div>
+                            </div>
+                            <div>
+                                <label for="left-ear-4000" class="block text-sm font-medium mb-1">4000 هرتز</label>
+                                <input type="number" id="left-ear-4000" min="0" max="120" placeholder="0-120" class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary">
+                                <div class="invalid-feedback" id="left-ear-4000-error">مقدار باید بین ۰ تا ۱۲۰ باشد</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h3 class="text-lg font-medium mb-2">گوش راست (دسی‌بل)</h3>
+                        <div class="frequency-inputs">
+                            <div>
+                                <label for="right-ear-2000" class="block text-sm font-medium mb-1">2000 هرتز</label>
+                                <input type="number" id="right-ear-2000" min="0" max="120" placeholder="0-120" class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary">
+                                <div class="invalid-feedback" id="right-ear-2000-error">مقدار باید بین ۰ تا ۱۲۰ باشد</div>
+                            </div>
+                            <div>
+                                <label for="right-ear-3000" class="block text-sm font-medium mb-1">3000 هرتز</label>
+                                <input type="number" id="right-ear-3000" min="0" max="120" placeholder="0-120" class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary">
+                                <div class="invalid-feedback" id="right-ear-3000-error">مقدار باید بین ۰ تا ۱۲۰ باشد</div>
+                            </div>
+                            <div>
+                                <label for="right-ear-4000" class="block text-sm font-medium mb-1">4000 هرتز</label>
+                                <input type="number" id="right-ear-4000" min="0" max="120" placeholder="0-120" class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary">
+                                <div class="invalid-feedback" id="right-ear-4000-error">مقدار باید بین ۰ تا ۱۲۰ باشد</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label for="measurement-notes" class="block text-sm font-medium mb-2">یادداشت‌ها</label>
+                        <textarea id="measurement-notes" rows="3" class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary" placeholder="یادداشت‌های اضافی درباره اندازه‌گیری"></textarea>
+                    </div>
+
+                    <div class="flex flex-col md:flex-row space-y-3 md:space-y-0 space-x-0 md:space-x-3 md:space-x-reverse">
+                        <button type="submit" id="measurement-submit-btn" class="btn-primary px-6 py-3 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 transition-colors">
+                            <i class="fas fa-chart-line ml-2"></i>افزودن اندازه‌گیری
+                        </button>
+                        <button type="button" id="measurement-cancel-btn" class="hidden px-6 py-3 rounded-md border border-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                            <i class="fas fa-times ml-2"></i>لغو ویرایش
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Measurements History -->
+                <div class="mt-6 md:mt-8">
+                    <h3 class="text-lg md:text-xl font-semibold mb-4">تاریخچه اندازه‌گیری‌ها</h3>
+                    <div id="measurements-history" class="space-y-4">
+                        <!-- Measurements will be populated here -->
+                    </div>
+                    <!-- Pagination -->
+                    <div id="measurements-pagination" class="pagination mt-4">
+                        <!-- Pagination buttons will be populated here -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- Protective Controls Section -->
+            <section id="section-controls" class="card rounded-xl shadow-md p-6 md:p-8 mb-8 hidden fade-in">
+                <h2 class="text-xl md:text-2xl font-bold mb-4 md:mb-6">کنترل‌های حفاظتی</h2>
+                
+                <!-- Add/Edit Form -->
+                <form id="control-form" class="grid grid-cols-1 gap-4 md:gap-6 mb-6">
+                    <input type="hidden" id="control-id" name="id">
+                    
+                    <div>
+                        <label for="control-individual" class="block text-sm font-medium mb-2">انتخاب فرد</label>
+                        <select id="control-individual" class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary" required>
+                            <option value="">یک فرد را انتخاب کنید</option>
+                        </select>
+                        <div class="invalid-feedback" id="control-individual-error">لطفا یک فرد را انتخاب کنید</div>
+                    </div>
+                    
+                    <div>
+                        <label for="control-type" class="block text-sm font-medium mb-2">نوع کنترل</label>
+                        <select id="control-type" class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary" required>
+                            <option value="engineering">کنترل‌های مهندسی</option>
+                            <option value="administrative">کنترل‌های مدیریتی</option>
+                            <option value="earplugs">گوش‌گیر</option>
+                            <option value="earmuffs">هدفون محافظ</option>
+                            <option value="noise-canceling">هدفون حذف نویز</option>
+                            <option value="other">سایر کنترل‌ها</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label for="control-description" class="block text-sm font-medium mb-2">توضیحات</label>
+                        <textarea id="control-description" rows="3" class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary" placeholder="شرح اقدامات کنترل حفاظتی" required></textarea>
+                        <div class="invalid-feedback" id="control-description-error">لطفا توضیحات را وارد کنید</div>
+                    </div>
+
+                    <div>
+                        <label for="control-date" class="block text-sm font-medium mb-2">تاریخ اجرا</label>
+                        <input type="date" id="control-date" class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary" max="" required>
+                        <div class="invalid-feedback" id="control-date-error">لطفا تاریخ معتبری انتخاب کنید</div>
+                    </div>
+                    
+                    <div>
+                        <label for="control-status" class="block text-sm font-medium mb-2">وضعیت</label>
+                        <select id="control-status" class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary" required>
+                            <option value="active">فعال</option>
+                            <option value="inactive">غیرفعال</option>
+                            <option value="pending">در انتظار</option>
+                        </select>
+                    </div>
+
+                    <div class="flex flex-col md:flex-row space-y-3 md:space-y-0 space-x-0 md:space-x-3 md:space-x-reverse">
+                        <button type="submit" id="control-submit-btn" class="btn-primary px-6 py-3 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 transition-colors">
+                            <i class="fas fa-shield-alt ml-2"></i>افزودن کنترل حفاظتی
+                        </button>
+                        <button type="button" id="control-cancel-btn" class="hidden px-6 py-3 rounded-md border border-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                            <i class="fas fa-times ml-2"></i>لغو ویرایش
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Controls List -->
+                <div class="mt-6 md:mt-8">
+                    <h3 class="text-lg md:text-xl font-semibold mb-4">کنترل‌های موجود</h3>
+                    <div id="controls-list" class="space-y-4">
+                        <!-- Controls will be populated here -->
+                    </div>
+                    <!-- Pagination -->
+                    <div id="controls-pagination" class="pagination mt-4">
+                        <!-- Pagination buttons will be populated here -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- Noise Data Section -->
+            <section id="section-noise" class="card rounded-xl shadow-md p-4 md:p-6 mb-8 hidden fade-in">
+                <h2 class="text-xl md:text-2xl font-bold mb-4 md:mb-6">داده‌های مواجهه با نویز</h2>
+                
+                <!-- Add/Edit Form -->
+                <form id="noise-form" class="grid grid-cols-1 gap-4 md:gap-6 mb-6">
+                    <input type="hidden" id="noise-id" name="id">
+                    
+                    <div>
+                        <label for="noise-individual" class="block text-sm font-medium mb-2">انتخاب فرد</label>
+                        <select id="noise-individual" class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary" required>
+                            <option value="">یک فرد را انتخاب کنید</option>
+                        </select>
+                        <div class="invalid-feedback" id="noise-individual-error">لطفا یک فرد را انتخاب کنید</div>
+                    </div>
+                    
+                    <div>
+                        <label for="noise-type" class="block text-sm font-medium mb-2">نوع نویز</label>
+                        <input type="text" id="noise-type" placeholder="مثلاً ماشین‌آلات، ساخت‌وساز و غیره" class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary" required>
+                        <div class="invalid-feedback" id="noise-type-error">لطفا نوع نویز را وارد کنید</div>
+                    </div>
+
+                    <div>
+                        <label for="noise-intensity" class="block text-sm font-medium mb-2">شدت (دسی‌بل)</label>
+                        <input type="number" id="noise-intensity" min="0" max="200" placeholder="شدت نویز بر حسب دسی‌بل (0-200)" class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary" required>
+                        <div class="invalid-feedback" id="noise-intensity-error">مقدار باید بین ۰ تا ۲۰۰ باشد</div>
+                    </div>
+                    
+                    <div>
+                        <label for="exposure-duration" class="block text-sm font-medium mb-2">مدت مواجهه (ساعت)</label>
+                        <input type="number" id="exposure-duration" min="0" max="24" placeholder="ساعات مواجهه روزانه (0-24)" class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary" step="0.1">
+                        <div class="invalid-feedback" id="exposure-duration-error">مقدار باید بین ۰ تا ۲۴ باشد</div>
+                    </div>
+
+                    <div>
+                        <label for="noise-location" class="block text-sm font-medium mb-2">محل/منطقه کاری</label>
+                        <input type="text" id="noise-location" placeholder="منطقه کاری که نویز در آن وجود دارد" class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary" required>
+                        <div class="invalid-feedback" id="noise-location-error">لطفا محل/منطقه کاری را وارد کنید</div>
+                    </div>
+
+                    <div class="flex flex-col md:flex-row space-y-3 md:space-y-0 space-x-0 md:space-x-3 md:space-x-reverse">
+                        <button type="submit" id="noise-submit-btn" class="btn-primary px-6 py-3 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 transition-colors">
+                            <i class="fas fa-volume-up ml-2"></i>افزودن داده نویز
+                        </button>
+                        <button type="button" id="noise-cancel-btn" class="hidden px-6 py-3 rounded-md border border-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                            <i class="fas fa-times ml-2"></i>لغو ویرایش
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Noise Data List -->
+                <div class="mt-6 md:mt-8">
+                    <h3 class="text-lg md:text-xl font-semibold mb-4">سوابق مواجهه با نویز</h3>
+                    <div id="noise-data-list" class="space-y-4">
+                        <!-- Noise data will be populated here -->
+                    </div>
+                    <!-- Pagination -->
+                    <div id="noise-pagination" class="pagination mt-4">
+                        <!-- Pagination buttons will be populated here -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- Portfolio Section -->
+            <section id="section-portfolio" class="card portfolio-section mb-8 hidden fade-in">
+                <div class="portfolio-header">
+                    <div class="profile-image">
+                        <i class="fas fa-user-tie"></i>
+                    </div>
+                    <h1 class="text-3xl font-bold mb-2">سروش همایون</h1>
+                    <p class="text-xl opacity-90">مهندس ارشد HSE (ایمنی، بهداشت و محیط زیست)</p>
+                </div>
+                
+                <div class="portfolio-content">
+                    <div class="mb-8">
+                        <h2 class="text-2xl font-bold mb-4 text-center">درباره من</h2>
+                        <p class="text-lg leading-relaxed text-justify">
+                            من سروش همایون، ۲۴ ساله، فارغ‌التحصیل مهندسی ایمنی، بهداشت و محیط زیست (HSE) هستم. 
+                            به عنوان یک مهندس تازه‌کار اما پرانگیزه، علاقه‌مند به حوزه‌های مدیریت ریسک، ارزیابی عوامل زیان‌آور محیط کار 
+                            و طراحی سیستم‌های مدیریت ایمنی و بهداشت حرفه‌ای می‌باشم. این سیستم مدیریت برنامه حفاظت شنوایی 
+                            نمونه‌ای از توانایی‌های من در توسعه راهکارهای نرم‌افزاری در حوزه HSE است.
+                        </p>
+                    </div>
+                    
+                    <div class="mb-8">
+                        <h2 class="text-2xl font-bold mb-4 text-center">اطلاعات تماس</h2>
+                        <div class="contact-info">
+                            <div class="contact-item">
+                                <i class="fas fa-phone"></i>
+                                <div>
+                                    <h3 class="font-semibold">شماره تماس</h3>
+                                    <p>۰۹۰۲۹۳۵۱۶۷۲</p>
+                                </div>
+                            </div>
+                            <div class="contact-item">
+                                <i class="fas fa-envelope"></i>
+                                <div>
+                                    <h3 class="font-semibold">آدرس ایمیل</h3>
+                                    <p>sorooshhomayoun@gmail.com</p>
+                                </div>
+                            </div>
+                            <div class="contact-item">
+                                <i class="fas fa-graduation-cap"></i>
+                                <div>
+                                    <h3 class="font-semibold">تحصیلات</h3>
+                                    <p>مهندس ارشد HSE</p>
+                                </div>
+                            </div>
+                            <div class="contact-item">
+                                <i class="fas fa-birthday-cake"></i>
+                                <div>
+                                    <h3 class="font-semibold">سن</h3>
+                                    <p>۲۴ سال</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h2 class="text-2xl font-bold mb-4 text-center">مهارت‌ها و تخصص‌ها</h2>
+                        <div class="skills-grid">
+                            <div class="skill-item">
+                                <i class="fas fa-shield-alt"></i>
+                                <h3 class="font-semibold">مدیریت ریسک</h3>
+                                <p>ارزیابی و کنترل ریسک‌های ایمنی و بهداشتی</p>
+                            </div>
+                            <div class="skill-item">
+                                <i class="fas fa-clipboard-check"></i>
+                                <h3 class="font-semibold">بازرسی ایمنی</h3>
+                                <p>بازرسی و ممیزی سیستم‌های مدیریت HSE</p>
+                            </div>
+                            <div class="skill-item">
+                                <i class="fas fa-chart-line"></i>
+                                <h3 class="font-semibold">آنالیز داده</h3>
+                                <p>تجزیه و تحلیل داده‌های ایمنی و بهداشتی</p>
+                            </div>
+                            <div class="skill-item">
+                                <i class="fas fa-laptop-code"></i>
+                                <h3 class="font-semibold">توسعه نرم‌افزار</h3>
+                                <p>طراحی سیستم‌های نرم‌افزاری حوزه HSE</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <footer class="text-white mt-12">
+            <div class="container mx-auto px-4 py-8">
+                <div class="flex flex-col md:flex-row justify-between items-center">
+                    <div class="mb-4 md:mb-0">
+                        <button id="footer-contact-creator" class="contact-creator text-lg font-semibold">
+                            <i class="fas fa-user ml-2"></i>نمایه سازنده
+                        </button>
+                    </div>
+                    <div class="text-sm opacity-80 text-center md:text-right">
+                        <p>© 2025 - سیستم مدیریت برنامه حفاظت شنوایی | کلیه حقوق محفوظ است</p>
+                    </div>
+                </div>
+            </div>
+        </footer>
+
+        <!-- PDF Export Modal -->
+        <div id="pdf-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50 p-4">
+            <div class="modal rounded-xl p-4 md:p-6 w-full max-w-md mx-auto">
+                <h3 class="text-xl font-bold mb-4">خروجی گزارش فردی</h3>
+                <div class="mb-4">
+                    <label for="export-individual" class="block text-sm font-medium mb-2">انتخاب فرد</label>
+                    <select id="export-individual" class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary">
+                        <option value="">یک فرد را انتخاب کنید</option>
+                    </select>
+                </div>
+                <div class="flex justify-start space-x-3 space-x-reverse">
+                    <button id="cancel-export" class="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700">لغو</button>
+                    <button id="generate-pdf" class="btn-primary px-4 py-2 rounded-md flex items-center">
+                        <span id="pdf-loading" class="loading hidden mr-2"></span>
+                        تولید PDF
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Delete Confirmation Modal -->
+        <div id="delete-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50 p-4">
+            <div class="modal rounded-xl p-4 md:p-6 w-full max-w-md mx-auto">
+                <h3 class="text-xl font-bold mb-4">تأیید حذف</h3>
+                <p class="mb-6" id="delete-message">آیا از حذف این رکورد اطمینان دارید؟</p>
+                <div class="flex justify-start space-x-3 space-x-reverse">
+                    <button id="cancel-delete" class="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700">لغو</button>
+                    <button id="confirm-delete" class="bg-danger text-white px-4 py-2 rounded-md hover:bg-red-700">حذف</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Backup Notification -->
+        <div id="backup-notification" class="backup-notification">
+            <span id="backup-message">پشتیبان‌گیری با موفقیت انجام شد</span>
+        </div>
+    </div>
+
+    <!-- Hidden PDF Report Container -->
+    <div id="pdf-report-container" class="pdf-report hidden"></div>
+
+    <!-- Input برای آپلود فایل پشتیبان -->
+    <input type="file" id="import-file" accept=".json" style="display: none;">
+
+    <script>
+        // Constants
+        const ITEMS_PER_PAGE = 5;
+        const BACKUP_KEY = 'hearingProtectionBackup';
+        const USERS_KEY = 'hearingAppUsers';
+        
+        // Data storage with localStorage persistence
+        let individuals = JSON.parse(localStorage.getItem('hearingIndividuals')) || [];
+        let measurements = JSON.parse(localStorage.getItem('hearingMeasurements')) || [];
+        let controls = JSON.parse(localStorage.getItem('hearingControls')) || [];
+        let noiseData = JSON.parse(localStorage.getItem('hearingNoiseData')) || [];
+        let users = JSON.parse(localStorage.getItem(USERS_KEY)) || [];
+        
+        // Pagination state
+        let currentPage = {
+            individuals: 1,
+            measurements: 1,
+            controls: 1,
+            noise: 1
+        };
+        
+        // Editing state
+        let editingIndividualId = null;
+        let editingMeasurementId = null;
+        let editingControlId = null;
+        let editingNoiseId = null;
+        
+        // Theme management
+        const currentTheme = localStorage.getItem('theme') || 'light';
+        if (currentTheme === 'dark') {
+            document.body.classList.remove('light-theme');
+            document.body.classList.add('dark-theme');
+            document.getElementById('theme-toggle').innerHTML = '<i class="fas fa-sun"></i>';
+            document.getElementById('login-theme-toggle').innerHTML = '<i class="fas fa-sun"></i>';
+        }
+
+        // DOM Elements
+        const navButtons = {
+            individuals: document.getElementById("nav-individuals"),
+            measurements: document.getElementById("nav-measurements"),
+            controls: document.getElementById("nav-controls"),
+            noise: document.getElementById("nav-noise")
+        };
+
+        const mobileNavButtons = {
+            individuals: document.getElementById("nav-individuals-mobile"),
+            measurements: document.getElementById("nav-measurements-mobile"),
+            controls: document.getElementById("nav-controls-mobile"),
+            noise: document.getElementById("nav-noise-mobile")
+        };
+
+        const sidebarNavButtons = {
+            individuals: document.getElementById("nav-individuals-sidebar"),
+            measurements: document.getElementById("nav-measurements-sidebar"),
+            controls: document.getElementById("nav-controls-sidebar"),
+            noise: document.getElementById("nav-noise-sidebar")
+        };
+
+        const sections = {
+            individuals: document.getElementById("section-individuals"),
+            measurements: document.getElementById("section-measurements"),
+            controls: document.getElementById("section-controls"),
+            noise: document.getElementById("section-noise"),
+            portfolio: document.getElementById("section-portfolio")
+        };
+
+        // Form elements
+        const individualForm = document.getElementById("individual-form");
+        const measurementForm = document.getElementById("measurement-form");
+        const controlForm = document.getElementById("control-form");
+        const noiseForm = document.getElementById("noise-form");
+        
+        const individualsList = document.getElementById("individuals-list");
+        const measurementIndividual = document.getElementById("measurement-individual");
+        const controlIndividual = document.getElementById("control-individual");
+        const noiseIndividual = document.getElementById("noise-individual");
+        const exportIndividual = document.getElementById("export-individual");
+        const pdfModal = document.getElementById("pdf-modal");
+        const deleteModal = document.getElementById("delete-modal");
+        const searchIndividual = document.getElementById("search-individual");
+        const themeToggle = document.getElementById("theme-toggle");
+        const loginThemeToggle = document.getElementById("login-theme-toggle");
+        const backupNotification = document.getElementById("backup-notification");
+        const pdfReportContainer = document.getElementById("pdf-report-container");
+        
+        // Sidebar elements
+        const sidebarToggle = document.getElementById("sidebar-toggle");
+        const sidebar = document.getElementById("sidebar");
+        const sidebarOverlay = document.getElementById("sidebar-overlay");
+        const sidebarClose = document.getElementById("sidebar-close");
+        const importBtnSidebar = document.getElementById("import-btn-sidebar");
+        const exportBtnSidebar = document.getElementById("export-btn-sidebar");
+        const contactCreatorSidebar = document.getElementById("contact-creator-sidebar");
+        const logoutBtnSidebar = document.getElementById("logout-btn-sidebar");
+
+        // Footer contact button
+        const footerContactCreator = document.getElementById("footer-contact-creator");
+
+        // Login elements
+        const loginPage = document.getElementById('login-page');
+        const mainApp = document.getElementById('main-app');
+        const loginForm = document.getElementById('login-form');
+        const registerForm = document.getElementById('register-form');
+        const loginError = document.getElementById('login-error');
+        const registerError = document.getElementById('register-error');
+        const registerSuccess = document.getElementById('register-success');
+        const switchToRegister = document.getElementById('switch-to-register');
+        const switchToLogin = document.getElementById('switch-to-login');
+        const loginFormContainer = document.getElementById('login-form-container');
+        const registerFormContainer = document.getElementById('register-form-container');
+
+        // Delete modal elements
+        const deleteMessage = document.getElementById("delete-message");
+        const cancelDelete = document.getElementById("cancel-delete");
+        const confirmDelete = document.getElementById("confirm-delete");
+
+        // Variables for tracking deletion
+        let itemToDelete = null;
+        let deleteType = null;
+
+        // Initialize application
+        function initApp() {
+            setupEventListeners();
+            updateIndividualsDropdowns();
+            renderIndividualsList();
+            setMaxDates();
+            
+            // Create initial backup
+            createBackup();
+        }
+
+        // Set max dates for date inputs to today
+        function setMaxDates() {
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('measurement-date').max = today;
+            document.getElementById('control-date').max = today;
+        }
+
+        // Save data to localStorage with error handling
+        function saveData() {
+            try {
+                localStorage.setItem('hearingIndividuals', JSON.stringify(individuals));
+                localStorage.setItem('hearingMeasurements', JSON.stringify(measurements));
+                localStorage.setItem('hearingControls', JSON.stringify(controls));
+                localStorage.setItem('hearingNoiseData', JSON.stringify(noiseData));
+                localStorage.setItem(USERS_KEY, JSON.stringify(users));
+                return true;
+            } catch (e) {
+                console.error('Error saving data:', e);
+                showNotification('خطا در ذخیره‌سازی داده‌ها. فضای ذخیره‌سازی ممکن است پر باشد.', 'error');
+                return false;
+            }
+        }
+
+        // Create data backup
+        function createBackup() {
+            const backup = {
+                individuals,
+                measurements,
+                controls,
+                noiseData,
+                timestamp: new Date().toISOString()
+            };
+            localStorage.setItem(BACKUP_KEY, JSON.stringify(backup));
+        }
+
+        // Restore data from backup
+        function restoreBackup() {
+            try {
+                const backup = JSON.parse(localStorage.getItem(BACKUP_KEY));
+                if (backup) {
+                    individuals = backup.individuals || [];
+                    measurements = backup.measurements || [];
+                    controls = backup.controls || [];
+                    noiseData = backup.noiseData || [];
+                    saveData();
+                    updateIndividualsDropdowns();
+                    renderIndividualsList();
+                    showNotification('داده‌ها با موفقیت بازیابی شدند', 'success');
+                }
+            } catch (e) {
+                console.error('Error restoring backup:', e);
+                showNotification('خطا در بازیابی پشتیبان', 'error');
+            }
+        }
+
+        // Export data for download
+        function exportData() {
+            const data = {
+                individuals,
+                measurements,
+                controls,
+                noiseData,
+                exportDate: new Date().toISOString()
+            };
+            
+            const dataStr = JSON.stringify(data, null, 2);
+            const dataBlob = new Blob([dataStr], {type: 'application/json'});
+            
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `hearing-protection-backup-${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+            
+            backupNotification.style.display = 'block';
+            setTimeout(() => {
+                backupNotification.style.display = 'none';
+            }, 3000);
+        }
+
+        // Import data from file
+        function importData(file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    
+                    if (data.individuals) individuals = data.individuals;
+                    if (data.measurements) measurements = data.measurements;
+                    if (data.controls) controls = data.controls;
+                    if (data.noiseData) noiseData = data.noiseData;
+                    
+                    saveData();
+                    updateIndividualsDropdowns();
+                    renderIndividualsList();
+                    showNotification('داده‌ها با موفقیت وارد شدند', 'success');
+                } catch (error) {
+                    console.error('Error importing data:', error);
+                    showNotification('خطا در وارد کردن داده‌ها. فایل معتبر نیست.', 'error');
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        // Setup event listeners
+        function setupEventListeners() {
+            // Navigation
+            Object.keys(navButtons).forEach(key => {
+                if (navButtons[key]) {
+                    navButtons[key].addEventListener("click", () => switchSection(key));
+                }
+            });
+
+            // Mobile navigation
+            Object.keys(mobileNavButtons).forEach(key => {
+                if (mobileNavButtons[key]) {
+                    mobileNavButtons[key].addEventListener("click", () => switchSection(key));
+                }
+            });
+
+            // Sidebar navigation
+            Object.keys(sidebarNavButtons).forEach(key => {
+                if (sidebarNavButtons[key]) {
+                    sidebarNavButtons[key].addEventListener("click", (e) => {
+                        e.preventDefault();
+                        switchSection(key);
+                        closeSidebar();
+                    });
+                }
+            });
+
+            // Portfolio navigation
+            if (footerContactCreator) {
+                footerContactCreator.addEventListener("click", () => switchSection("portfolio"));
+            }
+            if (contactCreatorSidebar) {
+                contactCreatorSidebar.addEventListener("click", (e) => {
+                    e.preventDefault();
+                    switchSection("portfolio");
+                    closeSidebar();
+                });
+            }
+
+            // Theme toggle
+            if (themeToggle) {
+                themeToggle.addEventListener("click", toggleTheme);
+            }
+            if (loginThemeToggle) {
+                loginThemeToggle.addEventListener("click", toggleTheme);
+            }
+
+            // Forms
+            if (individualForm) {
+                individualForm.addEventListener("submit", handleIndividualSubmit);
+            }
+            if (measurementForm) {
+                measurementForm.addEventListener("submit", handleMeasurementSubmit);
+            }
+            if (controlForm) {
+                controlForm.addEventListener("submit", handleControlSubmit);
+            }
+            if (noiseForm) {
+                noiseForm.addEventListener("submit", handleNoiseSubmit);
+            }
+
+            // Real-time validation
+            setupRealTimeValidation();
+
+            // Cancel buttons
+            const individualCancelBtn = document.getElementById("individual-cancel-btn");
+            const measurementCancelBtn = document.getElementById("measurement-cancel-btn");
+            const controlCancelBtn = document.getElementById("control-cancel-btn");
+            const noiseCancelBtn = document.getElementById("noise-cancel-btn");
+            
+            if (individualCancelBtn) individualCancelBtn.addEventListener("click", cancelIndividualEdit);
+            if (measurementCancelBtn) measurementCancelBtn.addEventListener("click", cancelMeasurementEdit);
+            if (controlCancelBtn) controlCancelBtn.addEventListener("click", cancelControlEdit);
+            if (noiseCancelBtn) noiseCancelBtn.addEventListener("click", cancelNoiseEdit);
+
+            // Search
+            if (searchIndividual) {
+                searchIndividual.addEventListener("input", () => {
+                    currentPage.individuals = 1;
+                    renderIndividualsList();
+                });
+            }
+
+            // PDF Export
+            const generatePdfBtn = document.getElementById("generate-pdf");
+            const cancelExportBtn = document.getElementById("cancel-export");
+            
+            if (generatePdfBtn) generatePdfBtn.addEventListener("click", generatePDF);
+            if (cancelExportBtn) cancelExportBtn.addEventListener("click", () => pdfModal.classList.add("hidden"));
+            
+            // Delete Modal
+            if (cancelDelete) cancelDelete.addEventListener("click", () => {
+                deleteModal.classList.add("hidden");
+                itemToDelete = null;
+                deleteType = null;
+            });
+            if (confirmDelete) confirmDelete.addEventListener("click", handleDelete);
+
+            // Sidebar functionality
+            if (sidebarToggle) sidebarToggle.addEventListener("click", openSidebar);
+            if (sidebarClose) sidebarClose.addEventListener("click", closeSidebar);
+            if (sidebarOverlay) sidebarOverlay.addEventListener("click", closeSidebar);
+            
+            // Sidebar menu items
+            if (importBtnSidebar) {
+                importBtnSidebar.addEventListener("click", function(e) {
+                    e.preventDefault();
+                    document.getElementById("import-file").click();
+                    closeSidebar();
+                });
+            }
+            
+            if (exportBtnSidebar) {
+                exportBtnSidebar.addEventListener("click", function(e) {
+                    e.preventDefault();
+                    exportData();
+                    closeSidebar();
+                });
+            }
+            
+            if (logoutBtnSidebar) {
+                logoutBtnSidebar.addEventListener("click", function(e) {
+                    e.preventDefault();
+                    handleLogout();
+                    closeSidebar();
+                });
+            }
+            
+            // Import file functionality
+            const importFile = document.getElementById("import-file");
+            if (importFile) {
+                importFile.addEventListener("change", (e) => {
+                    if (e.target.files.length > 0) {
+                        importData(e.target.files[0]);
+                        e.target.value = ''; // Reset file input
+                    }
+                });
+            }
+
+            // Login/Register
+            if (loginForm) loginForm.addEventListener("submit", handleLogin);
+            if (registerForm) registerForm.addEventListener("submit", handleRegister);
+            if (switchToRegister) switchToRegister.addEventListener("click", showRegisterForm);
+            if (switchToLogin) switchToLogin.addEventListener("click", showLoginForm);
+
+            // Add export button to individuals list
+            document.addEventListener("click", function(e) {
+                if (e.target.classList.contains("export-pdf") || e.target.closest(".export-pdf")) {
+                    const btn = e.target.classList.contains("export-pdf") ? e.target : e.target.closest(".export-pdf");
+                    const individualId = btn.dataset.id;
+                    if (exportIndividual) {
+                        exportIndividual.value = individualId;
+                        pdfModal.classList.remove("hidden");
+                    }
+                }
+                
+                // Handle delete buttons
+                if (e.target.classList.contains("delete-btn") || e.target.closest(".delete-btn")) {
+                    const btn = e.target.classList.contains("delete-btn") ? e.target : e.target.closest(".delete-btn");
+                    const id = btn.dataset.id;
+                    const type = btn.dataset.type;
+                    showDeleteModal(id, type);
+                }
+
+                // Handle edit buttons
+                if (e.target.classList.contains("edit-btn") || e.target.closest(".edit-btn")) {
+                    const btn = e.target.classList.contains("edit-btn") ? e.target : e.target.closest(".edit-btn");
+                    const id = btn.dataset.id;
+                    const type = btn.dataset.type;
+                    handleEdit(id, type);
+                }
+                
+                // Handle pagination
+                if (e.target.classList.contains("page-btn")) {
+                    const page = parseInt(e.target.dataset.page);
+                    const type = e.target.dataset.type;
+                    currentPage[type] = page;
+                    
+                    if (type === 'individuals') {
+                        renderIndividualsList();
+                    } else if (type === 'measurements' && measurementIndividual && measurementIndividual.value) {
+                        renderMeasurementsHistory(measurementIndividual.value);
+                    } else if (type === 'controls' && controlIndividual && controlIndividual.value) {
+                        renderControlsList(controlIndividual.value);
+                    } else if (type === 'noise' && noiseIndividual && noiseIndividual.value) {
+                        renderNoiseDataList(noiseIndividual.value);
+                    }
+                }
+            });
+
+            // Update dropdowns when individual selection changes
+            if (measurementIndividual) {
+                measurementIndividual.addEventListener("change", function() {
+                    currentPage.measurements = 1;
+                    if (this.value) {
+                        renderMeasurementsHistory(this.value);
+                    } else {
+                        const historyContainer = document.getElementById("measurements-history");
+                        if (historyContainer) {
+                            historyContainer.innerHTML = "<p class='text-gray-500'>برای مشاهده اندازه‌گیری‌ها یک فرد را انتخاب کنید</p>";
+                        }
+                        const paginationContainer = document.getElementById('measurements-pagination');
+                        if (paginationContainer) {
+                            paginationContainer.innerHTML = '';
+                        }
+                    }
+                });
+            }
+
+            if (controlIndividual) {
+                controlIndividual.addEventListener("change", function() {
+                    currentPage.controls = 1;
+                    if (this.value) {
+                        renderControlsList(this.value);
+                    } else {
+                        const listContainer = document.getElementById("controls-list");
+                        if (listContainer) {
+                            listContainer.innerHTML = "<p class='text-gray-500'>برای مشاهده کنترل‌ها یک فرد را انتخاب کنید</p>";
+                        }
+                        const paginationContainer = document.getElementById('controls-pagination');
+                        if (paginationContainer) {
+                            paginationContainer.innerHTML = '';
+                        }
+                    }
+                });
+            }
+
+            if (noiseIndividual) {
+                noiseIndividual.addEventListener("change", function() {
+                    currentPage.noise = 1;
+                    if (this.value) {
+                        renderNoiseDataList(this.value);
+                    } else {
+                        const listContainer = document.getElementById("noise-data-list");
+                        if (listContainer) {
+                            listContainer.innerHTML = "<p class='text-gray-500'>برای مشاهده داده‌های نویز یک فرد را انتخاب کنید</p>";
+                        }
+                        const paginationContainer = document.getElementById('noise-pagination');
+                        if (paginationContainer) {
+                            paginationContainer.innerHTML = '';
+                        }
+                    }
+                });
+            }
+        }
+
+        // Sidebar functions
+        function openSidebar() {
+            sidebar.classList.add("open");
+            sidebarOverlay.classList.add("open");
+        }
+
+        function closeSidebar() {
+            sidebar.classList.remove("open");
+            sidebarOverlay.classList.remove("open");
+        }
+
+        // Setup real-time validation for forms
+        function setupRealTimeValidation() {
+            // Individual form validation
+            const individualFields = ['firstName', 'lastName', 'jobTitle', 'factoryName', 'nationalCode'];
+            individualFields.forEach(field => {
+                const input = document.getElementById(field);
+                const error = document.getElementById(`${field}-error`);
+                
+                if (input && error) {
+                    input.addEventListener('blur', () => validateField(input, error));
+                    input.addEventListener('input', () => clearValidation(input, error));
+                }
+            });
+
+            // Measurement form validation
+            const measurementFields = ['measurement-individual', 'measurement-date'];
+            measurementFields.forEach(field => {
+                const input = document.getElementById(field);
+                const error = document.getElementById(`${field}-error`);
+                
+                if (input && error) {
+                    input.addEventListener('blur', () => validateField(input, error));
+                    input.addEventListener('input', () => clearValidation(input, error));
+                }
+            });
+
+            // Hearing measurement fields
+            const hearingFields = [
+                'left-ear-2000', 'left-ear-3000', 'left-ear-4000',
+                'right-ear-2000', 'right-ear-3000', 'right-ear-4000'
+            ];
+            hearingFields.forEach(field => {
+                const input = document.getElementById(field);
+                const error = document.getElementById(`${field}-error`);
+                
+                if (input && error) {
+                    input.addEventListener('blur', () => validateHearingField(input, error));
+                    input.addEventListener('input', () => clearValidation(input, error));
+                }
+            });
+
+            // Control form validation
+            const controlFields = ['control-individual', 'control-description', 'control-date'];
+            controlFields.forEach(field => {
+                const input = document.getElementById(field);
+                const error = document.getElementById(`${field}-error`);
+                
+                if (input && error) {
+                    input.addEventListener('blur', () => validateField(input, error));
+                    input.addEventListener('input', () => clearValidation(input, error));
+                }
+            });
+
+            // Noise form validation
+            const noiseFields = ['noise-individual', 'noise-type', 'noise-intensity', 'exposure-duration', 'noise-location'];
+            noiseFields.forEach(field => {
+                const input = document.getElementById(field);
+                const error = document.getElementById(`${field}-error`);
+                
+                if (input && error) {
+                    input.addEventListener('blur', () => validateNoiseField(input, error));
+                    input.addEventListener('input', () => clearValidation(input, error));
+                }
+            });
+
+            // Register form validation
+            const registerFields = ['new-username', 'new-password', 'confirm-password'];
+            registerFields.forEach(field => {
+                const input = document.getElementById(field);
+                const error = document.getElementById(`${field}-error`);
+                
+                if (input && error) {
+                    input.addEventListener('blur', () => validateRegisterField(input, error));
+                    input.addEventListener('input', () => clearValidation(input, error));
+                }
+            });
+        }
+
+        // Field validation functions
+        function validateField(input, errorElement) {
+            if (!input.value.trim()) {
+                showError(input, errorElement, 'این فیلد اجباری است');
+                return false;
+            }
+            
+            // Special validation for national code
+            if (input.id === 'nationalCode' && !/^\d{10}$/.test(input.value)) {
+                showError(input, errorElement, 'کد ملی باید ۱۰ رقم باشد');
+                return false;
+            }
+            
+            clearError(input, errorElement);
+            return true;
+        }
+
+        function validateHearingField(input, errorElement) {
+            if (input.value && (input.value < 0 || input.value > 120)) {
+                showError(input, errorElement, 'مقدار باید بین ۰ تا ۱۲۰ باشد');
+                return false;
+            }
+            clearError(input, errorElement);
+            return true;
+        }
+
+        function validateNoiseField(input, errorElement) {
+            if (!input.value.trim() && input.id !== 'exposure-duration') {
+                showError(input, errorElement, 'این فیلد اجباری است');
+                return false;
+            }
+            
+            if (input.id === 'noise-intensity' && input.value && (input.value < 0 || input.value > 200)) {
+                showError(input, errorElement, 'مقدار باید بین ۰ تا ۲۰۰ باشد');
+                return false;
+            }
+            
+            if (input.id === 'exposure-duration' && input.value && (input.value < 0 || input.value > 24)) {
+                showError(input, errorElement, 'مقدار باید بین ۰ تا ۲۴ باشد');
+                return false;
+            }
+            
+            clearError(input, errorElement);
+            return true;
+        }
+
+        function validateRegisterField(input, errorElement) {
+            if (!input.value.trim()) {
+                showError(input, errorElement, 'این فیلد اجباری است');
+                return false;
+            }
+            
+            if (input.id === 'new-username' && input.value.length < 3) {
+                showError(input, errorElement, 'نام کاربری باید حداقل ۳ کاراکتر باشد');
+                return false;
+            }
+            
+            if (input.id === 'new-password' && input.value.length < 6) {
+                showError(input, errorElement, 'رمز عبور باید حداقل ۶ کاراکتر باشد');
+                return false;
+            }
+            
+            if (input.id === 'confirm-password' && input.value !== document.getElementById('new-password').value) {
+                showError(input, errorElement, 'رمز عبور و تکرار آن مطابقت ندارند');
+                return false;
+            }
+            
+            clearError(input, errorElement);
+            return true;
+        }
+
+        function showError(input, errorElement, message) {
+            input.classList.add('is-invalid');
+            errorElement.textContent = message;
+            errorElement.style.display = 'block';
+        }
+
+        function clearError(input, errorElement) {
+            input.classList.remove('is-invalid');
+            errorElement.style.display = 'none';
+        }
+
+        function clearValidation(input, errorElement) {
+            if (input.value.trim()) {
+                clearError(input, errorElement);
+            }
+        }
+
+        // Toggle theme
+        function toggleTheme() {
+            if (document.body.classList.contains('light-theme')) {
+                document.body.classList.remove('light-theme');
+                document.body.classList.add('dark-theme');
+                if (themeToggle) themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
+                if (loginThemeToggle) loginThemeToggle.innerHTML = '<i class="fas fa-sun"></i>';
+                localStorage.setItem('theme', 'dark');
+            } else {
+                document.body.classList.remove('dark-theme');
+                document.body.classList.add('light-theme');
+                if (themeToggle) themeToggle.innerHTML = '<i class="fas fa-moon"></i>';
+                if (loginThemeToggle) loginThemeToggle.innerHTML = '<i class="fas fa-moon"></i>';
+                localStorage.setItem('theme', 'light');
+            }
+        }
+
+        // Switch between sections
+        function switchSection(section) {
+            // Update navigation
+            Object.keys(navButtons).forEach(key => {
+                if (navButtons[key]) {
+                    navButtons[key].classList.remove("active");
+                }
+            });
+
+            Object.keys(mobileNavButtons).forEach(key => {
+                if (mobileNavButtons[key]) {
+                    mobileNavButtons[key].classList.remove("active");
+                }
+            });
+
+            // Hide all sections
+            Object.keys(sections).forEach(key => {
+                if (sections[key]) {
+                    sections[key].classList.add("hidden");
+                }
+            });
+
+            // Show selected section
+            if (sections[section]) {
+                sections[section].classList.remove("hidden");
+            }
+
+            // If the section is one of the main ones, activate the corresponding nav button
+            if (navButtons[section]) {
+                navButtons[section].classList.add("active");
+            }
+            if (mobileNavButtons[section]) {
+                mobileNavButtons[section].classList.add("active");
+            }
+        }
+
+        // Validation functions
+        function validateHearingMeasurement(db) {
+            return db === "" || (db >= 0 && db <= 120);
+        }
+
+        function validateNoiseIntensity(db) {
+            return db === "" || (db >= 0 && db <= 200);
+        }
+
+        function validateExposureDuration(hours) {
+            return hours === "" || (hours >= 0 && hours <= 24);
+        }
+
+        function validateDateNotFuture(dateString) {
+            if (!dateString) return true;
+            const inputDate = new Date(dateString);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            return inputDate <= today;
+        }
+
+        // Calculate average of three frequencies
+        function calculateAverage(f2000, f3000, f4000) {
+            const values = [f2000, f3000, f4000].filter(val => val !== "" && val !== null && !isNaN(val));
+            if (values.length === 0) return null;
+            return values.reduce((sum, val) => sum + parseFloat(val), 0) / values.length;
+        }
+
+        // Handle individual form submission (add/edit)
+        function handleIndividualSubmit(e) {
+            e.preventDefault();
+            
+            // Validate all fields
+            let isValid = true;
+            const fields = ['firstName', 'lastName', 'jobTitle', 'factoryName', 'nationalCode'];
+            fields.forEach(field => {
+                const input = document.getElementById(field);
+                const error = document.getElementById(`${field}-error`);
+                if (input && error && !validateField(input, error)) {
+                    isValid = false;
+                }
+            });
+            
+            if (!isValid) {
+                showNotification("لطفا تمام فیلدهای اجباری را به درستی پر کنید", "error");
+                return;
+            }
+            
+            const formData = new FormData(individualForm);
+            const nationalCode = formData.get("nationalCode");
+            
+            // Check for duplicate national code only when adding new individual
+            if (!editingIndividualId) {
+                const duplicate = individuals.find(i => i.nationalCode === nationalCode);
+                if (duplicate) {
+                    showNotification("فردی با این کد ملی قبلاً ثبت شده است", "error");
+                    return;
+                }
+            } else {
+                // Check for duplicate when editing (excluding current individual)
+                const duplicate = individuals.find(i => i.nationalCode === nationalCode && i.id !== editingIndividualId);
+                if (duplicate) {
+                    showNotification("فردی با این کد ملی قبلاً ثبت شده است", "error");
+                    return;
+                }
+            }
+
+            const individualData = {
+                firstName: escapeHtml(formData.get("firstName")),
+                lastName: escapeHtml(formData.get("lastName")),
+                jobTitle: escapeHtml(formData.get("jobTitle")),
+                factoryName: escapeHtml(formData.get("factoryName")),
+                nationalCode: nationalCode,
+                registrationDate: editingIndividualId ? 
+                    individuals.find(i => i.id === editingIndividualId).registrationDate : 
+                    new Date().toISOString().split("T")[0]
+            };
+
+            if (editingIndividualId) {
+                // Update existing individual
+                const index = individuals.findIndex(i => i.id === editingIndividualId);
+                if (index !== -1) {
+                    individuals[index] = { ...individuals[index], ...individualData };
+                    showNotification("فرد با موفقیت ویرایش شد", "success");
+                }
+            } else {
+                // Create new individual
+                const individual = {
+                    id: Date.now().toString(),
+                    ...individualData
+                };
+                individuals.push(individual);
+                showNotification("فرد با موفقیت ثبت شد", "success");
+            }
+
+            // Reset form and update UI
+            cancelIndividualEdit();
+            updateIndividualsDropdowns();
+            renderIndividualsList();
+            if (saveData()) {
+                createBackup();
+            }
+        }
+
+        // Handle measurement form submission (add/edit)
+        function handleMeasurementSubmit(e) {
+            e.preventDefault();
+            
+            // Validate required fields
+            let isValid = true;
+            const requiredFields = ['measurement-individual', 'measurement-date'];
+            requiredFields.forEach(field => {
+                const input = document.getElementById(field);
+                const error = document.getElementById(`${field}-error`);
+                if (input && error && !validateField(input, error)) {
+                    isValid = false;
+                }
+            });
+            
+            // Validate hearing fields
+            const hearingFields = [
+                'left-ear-2000', 'left-ear-3000', 'left-ear-4000',
+                'right-ear-2000', 'right-ear-3000', 'right-ear-4000'
+            ];
+            hearingFields.forEach(field => {
+                const input = document.getElementById(field);
+                const error = document.getElementById(`${field}-error`);
+                if (input && input.value && error && !validateHearingField(input, error)) {
+                    isValid = false;
+                }
+            });
+            
+            if (!isValid) {
+                showNotification("لطفا تمام فیلدها را به درستی پر کنید", "error");
+                return;
+            }
+            
+            const individualId = document.getElementById("measurement-individual").value;
+            const date = document.getElementById("measurement-date").value;
+            
+            // Get frequency values for left ear
+            const leftEar2000 = document.getElementById("left-ear-2000").value;
+            const leftEar3000 = document.getElementById("left-ear-3000").value;
+            const leftEar4000 = document.getElementById("left-ear-4000").value;
+            
+            // Get frequency values for right ear
+            const rightEar2000 = document.getElementById("right-ear-2000").value;
+            const rightEar3000 = document.getElementById("right-ear-3000").value;
+            const rightEar4000 = document.getElementById("right-ear-4000").value;
+            
+            const notes = document.getElementById("measurement-notes").value;
+
+            // Validate date
+            if (!validateDateNotFuture(date)) {
+                showNotification("تاریخ اندازه‌گیری نمی‌تواند در آینده باشد", "error");
+                return;
+            }
+
+            // Check for duplicate measurement on same date (only when adding new)
+            if (!editingMeasurementId) {
+                const duplicate = measurements.find(m => 
+                    m.individualId === individualId && m.date === date
+                );
+                
+                if (duplicate) {
+                    showNotification("برای این فرد در تاریخ انتخاب شده قبلاً اندازه‌گیری ثبت شده است", "error");
+                    return;
+                }
+            }
+
+            // Calculate averages
+            const leftEarAverage = calculateAverage(leftEar2000, leftEar3000, leftEar4000);
+            const rightEarAverage = calculateAverage(rightEar2000, rightEar3000, rightEar4000);
+
+            const measurementData = {
+                individualId,
+                date,
+                leftEar: {
+                    f2000: leftEar2000 || null,
+                    f3000: leftEar3000 || null,
+                    f4000: leftEar4000 || null,
+                    average: leftEarAverage
+                },
+                rightEar: {
+                    f2000: rightEar2000 || null,
+                    f3000: rightEar3000 || null,
+                    f4000: rightEar4000 || null,
+                    average: rightEarAverage
+                },
+                notes: escapeHtml(notes)
+            };
+
+            if (editingMeasurementId) {
+                // Update existing measurement
+                const index = measurements.findIndex(m => m.id === editingMeasurementId);
+                if (index !== -1) {
+                    measurements[index] = { ...measurements[index], ...measurementData };
+                    showNotification("اندازه‌گیری با موفقیت ویرایش شد", "success");
+                }
+            } else {
+                // Create new measurement
+                const measurement = {
+                    id: Date.now().toString(),
+                    ...measurementData
+                };
+                measurements.push(measurement);
+                showNotification("اندازه‌گیری با موفقیت افزوده شد", "success");
+            }
+
+            // Reset form and update UI
+            cancelMeasurementEdit();
+            renderMeasurementsHistory(individualId);
+            if (saveData()) {
+                createBackup();
+            }
+        }
+
+        // Handle control form submission (add/edit)
+        function handleControlSubmit(e) {
+            e.preventDefault();
+            
+            // Validate required fields
+            let isValid = true;
+            const requiredFields = ['control-individual', 'control-description', 'control-date'];
+            requiredFields.forEach(field => {
+                const input = document.getElementById(field);
+                const error = document.getElementById(`${field}-error`);
+                if (input && error && !validateField(input, error)) {
+                    isValid = false;
+                }
+            });
+            
+            if (!isValid) {
+                showNotification("لطفا تمام فیلدهای اجباری را پر کنید", "error");
+                return;
+            }
+            
+            const formData = new FormData(controlForm);
+            const individualId = document.getElementById("control-individual").value;
+            const type = document.getElementById("control-type").value;
+            const description = document.getElementById("control-description").value;
+            const date = document.getElementById("control-date").value;
+            const status = document.getElementById("control-status").value;
+
+            // Validate date
+            if (!validateDateNotFuture(date)) {
+                showNotification("تاریخ اجرا نمی‌تواند در آینده باشد", "error");
+                return;
+            }
+
+            const controlData = {
+                individualId,
+                type,
+                description: escapeHtml(description),
+                date: date || new Date().toISOString().split("T")[0],
+                status
+            };
+
+            if (editingControlId) {
+                // Update existing control
+                const index = controls.findIndex(c => c.id === editingControlId);
+                if (index !== -1) {
+                    controls[index] = { ...controls[index], ...controlData };
+                    showNotification("کنترل حفاظتی با موفقیت ویرایش شد", "success");
+                }
+            } else {
+                // Create new control
+                const control = {
+                    id: Date.now().toString(),
+                    ...controlData
+                };
+                controls.push(control);
+                showNotification("کنترل حفاظتی با موفقیت افزوده شد", "success");
+            }
+
+            // Reset form and update UI
+            cancelControlEdit();
+            renderControlsList(individualId);
+            if (saveData()) {
+                createBackup();
+            }
+        }
+
+        // Handle noise form submission (add/edit)
+        function handleNoiseSubmit(e) {
+            e.preventDefault();
+            
+            // Validate required fields
+            let isValid = true;
+            const requiredFields = ['noise-individual', 'noise-type', 'noise-intensity', 'noise-location'];
+            requiredFields.forEach(field => {
+                const input = document.getElementById(field);
+                const error = document.getElementById(`${field}-error`);
+                if (input && error && !validateNoiseField(input, error)) {
+                    isValid = false;
+                }
+            });
+            
+            if (!isValid) {
+                showNotification("لطفا تمام فیلدهای اجباری را به درستی پر کنید", "error");
+                return;
+            }
+            
+            const formData = new FormData(noiseForm);
+            const individualId = document.getElementById("noise-individual").value;
+            const type = document.getElementById("noise-type").value;
+            const intensity = document.getElementById("noise-intensity").value;
+            const duration = document.getElementById("exposure-duration").value;
+            const location = document.getElementById("noise-location").value;
+
+            // Validate noise data
+            if (!validateNoiseIntensity(intensity)) {
+                showNotification("شدت نویز باید بین 0 تا 200 دسی‌بل باشد", "error");
+                return;
+            }
+            
+            if (!validateExposureDuration(duration)) {
+                showNotification("مدت مواجهه باید بین 0 تا 24 ساعت باشد", "error");
+                return;
+            }
+
+            const noiseDataRecord = {
+                individualId,
+                type: escapeHtml(type),
+                intensity: parseInt(intensity),
+                duration: duration ? parseFloat(duration) : null,
+                location: escapeHtml(location),
+                recordedDate: new Date().toISOString().split("T")[0]
+            };
+
+            if (editingNoiseId) {
+                // Update existing noise data
+                const index = noiseData.findIndex(n => n.id === editingNoiseId);
+                if (index !== -1) {
+                    noiseData[index] = { ...noiseData[index], ...noiseDataRecord };
+                    showNotification("داده نویز با موفقیت ویرایش شد", "success");
+                }
+            } else {
+                // Create new noise data
+                const noiseRecord = {
+                    id: Date.now().toString(),
+                    ...noiseDataRecord
+                };
+                noiseData.push(noiseRecord);
+                showNotification("داده نویز با موفقیت افزوده شد", "success");
+            }
+
+            // Reset form and update UI
+            cancelNoiseEdit();
+            renderNoiseDataList(individualId);
+            if (saveData()) {
+                createBackup();
+            }
+        }
+
+        // Update all dropdowns with individuals
+        function updateIndividualsDropdowns() {
+            const dropdowns = [measurementIndividual, controlIndividual, noiseIndividual, exportIndividual];
+            
+            dropdowns.forEach(dropdown => {
+                if (dropdown) {
+                    dropdown.innerHTML = "<option value=''>یک فرد را انتخاب کنید</option>";
+                    individuals.forEach(individual => {
+                        const option = document.createElement("option");
+                        option.value = individual.id;
+                        option.textContent = `${individual.firstName} ${individual.lastName} (${individual.nationalCode})`;
+                        dropdown.appendChild(option);
+                    });
+                }
+            });
+        }
+
+        // Render individuals list with search and pagination
+        function renderIndividualsList() {
+            if (!individualsList) return;
+            
+            individualsList.innerHTML = "";
+            
+            const searchTerm = searchIndividual ? searchIndividual.value.toLowerCase() : '';
+            const filteredIndividuals = individuals.filter(individual => 
+                individual.firstName.toLowerCase().includes(searchTerm) ||
+                individual.lastName.toLowerCase().includes(searchTerm) ||
+                individual.jobTitle.toLowerCase().includes(searchTerm) ||
+                individual.factoryName.toLowerCase().includes(searchTerm) ||
+                individual.nationalCode.includes(searchTerm)
+            );
+            
+            if (filteredIndividuals.length === 0) {
+                individualsList.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="px-4 py-8 text-center">
+                            هیچ فردی مطابق با جستجوی شما یافت نشد
+                        </td>
+                    </tr>
+                `;
+                const paginationContainer = document.getElementById('individuals-pagination');
+                if (paginationContainer) {
+                    paginationContainer.innerHTML = '';
+                }
+                return;
+            }
+            
+            // Pagination
+            const totalPages = Math.ceil(filteredIndividuals.length / ITEMS_PER_PAGE);
+            const startIndex = (currentPage.individuals - 1) * ITEMS_PER_PAGE;
+            const paginatedIndividuals = filteredIndividuals.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+            
+            paginatedIndividuals.forEach(individual => {
+                const row = document.createElement("tr");
+                
+                const nameCell = document.createElement("td");
+                nameCell.className = "px-4 py-3 text-sm";
+                nameCell.textContent = `${individual.firstName} ${individual.lastName}`;
+                
+                const jobCell = document.createElement("td");
+                jobCell.className = "px-4 py-3 text-sm";
+                jobCell.textContent = individual.jobTitle;
+                
+                const factoryCell = document.createElement("td");
+                factoryCell.className = "px-4 py-3 text-sm";
+                factoryCell.textContent = individual.factoryName;
+                
+                const codeCell = document.createElement("td");
+                codeCell.className = "px-4 py-3 text-sm";
+                codeCell.textContent = individual.nationalCode;
+                
+                const actionsCell = document.createElement("td");
+                actionsCell.className = "px-4 py-3 text-sm space-x-2 space-x-reverse";
+                
+                const exportBtn = document.createElement("button");
+                exportBtn.className = "export-pdf text-primary hover:text-blue-700 font-medium";
+                exportBtn.setAttribute("data-id", individual.id);
+                exportBtn.innerHTML = '<i class="fas fa-file-pdf ml-1"></i>خروجی';
+                
+                const editBtn = document.createElement("button");
+                editBtn.className = "edit-btn text-accent hover:text-green-700 font-medium";
+                editBtn.setAttribute("data-id", individual.id);
+                editBtn.setAttribute("data-type", "individual");
+                editBtn.innerHTML = '<i class="fas fa-edit ml-1"></i>ویرایش';
+                
+                const deleteBtn = document.createElement("button");
+                deleteBtn.className = "delete-btn text-danger hover:text-red-700 font-medium";
+                deleteBtn.setAttribute("data-id", individual.id);
+                deleteBtn.setAttribute("data-type", "individual");
+                deleteBtn.innerHTML = '<i class="fas fa-trash ml-1"></i>حذف';
+                
+                actionsCell.appendChild(exportBtn);
+                actionsCell.appendChild(editBtn);
+                actionsCell.appendChild(deleteBtn);
+                
+                row.appendChild(nameCell);
+                row.appendChild(jobCell);
+                row.appendChild(factoryCell);
+                row.appendChild(codeCell);
+                row.appendChild(actionsCell);
+                
+                individualsList.appendChild(row);
+            });
+            
+            // Render pagination
+            renderPagination('individuals', totalPages, currentPage.individuals);
+        }
+
+        // Render pagination controls
+        function renderPagination(type, totalPages, currentPage) {
+            const container = document.getElementById(`${type}-pagination`);
+            if (!container) return;
+            
+            container.innerHTML = '';
+            
+            if (totalPages <= 1) return;
+            
+            // Previous button
+            if (currentPage > 1) {
+                const prevButton = document.createElement('button');
+                prevButton.className = 'page-btn';
+                prevButton.innerHTML = '<i class="fas fa-chevron-right"></i>';
+                prevButton.setAttribute('data-page', currentPage - 1);
+                prevButton.setAttribute('data-type', type);
+                container.appendChild(prevButton);
+            }
+            
+            for (let i = 1; i <= totalPages; i++) {
+                const button = document.createElement('button');
+                button.className = `page-btn ${i === currentPage ? 'active' : ''}`;
+                button.textContent = i;
+                button.setAttribute('data-page', i);
+                button.setAttribute('data-type', type);
+                container.appendChild(button);
+            }
+            
+            // Next button
+            if (currentPage < totalPages) {
+                const nextButton = document.createElement('button');
+                nextButton.className = 'page-btn';
+                nextButton.innerHTML = '<i class="fas fa-chevron-left"></i>';
+                nextButton.setAttribute('data-page', currentPage + 1);
+                nextButton.setAttribute('data-type', type);
+                container.appendChild(nextButton);
+            }
+        }
+
+        // Show delete confirmation modal
+        function showDeleteModal(id, type) {
+            itemToDelete = id;
+            deleteType = type;
+            
+            let message = "";
+            if (type === "individual") {
+                const individual = individuals.find(i => i.id === id);
+                message = `آیا از حذف ${individual.firstName} ${individual.lastName} اطمینان دارید؟ این عمل تمام اندازه‌گیری‌ها، کنترل‌ها و داده‌های نویز مرتبط را نیز حذف خواهد کرد.`;
+            } else if (type === "measurement") {
+                message = "آیا از حذف این اندازه‌گیری اطمینان دارید؟";
+            } else if (type === "control") {
+                message = "آیا از حذف این کنترل حفاظتی اطمینان دارید؟";
+            } else if (type === "noise") {
+                message = "آیا از حذف این داده نویز اطمینان دارید؟";
+            }
+            
+            if (deleteMessage) {
+                deleteMessage.textContent = message;
+                deleteModal.classList.remove("hidden");
+            }
+        }
+
+        // Handle deletion
+        function handleDelete() {
+            if (!itemToDelete || !deleteType) return;
+            
+            if (deleteType === "individual") {
+                // Delete individual and all associated data
+                individuals = individuals.filter(i => i.id !== itemToDelete);
+                measurements = measurements.filter(m => m.individualId !== itemToDelete);
+                controls = controls.filter(c => c.individualId !== itemToDelete);
+                noiseData = noiseData.filter(n => n.individualId !== itemToDelete);
+                showNotification("فرد و تمام داده‌های مرتبط با موفقیت حذف شدند", "success");
+            } else if (deleteType === "measurement") {
+                measurements = measurements.filter(m => m.id !== itemToDelete);
+                showNotification("اندازه‌گیری با موفقیت حذف شد", "success");
+            } else if (deleteType === "control") {
+                controls = controls.filter(c => c.id !== itemToDelete);
+                showNotification("کنترل حفاظتی با موفقیت حذف شد", "success");
+            } else if (deleteType === "noise") {
+                noiseData = noiseData.filter(n => n.id !== itemToDelete);
+                showNotification("داده نویز با موفقیت حذف شد", "success");
+            }
+            
+            // Update UI
+            updateIndividualsDropdowns();
+            renderIndividualsList();
+            
+            // Refresh current section if needed
+            if (deleteType === "measurement" && measurementIndividual && measurementIndividual.value) {
+                renderMeasurementsHistory(measurementIndividual.value);
+            } else if (deleteType === "control" && controlIndividual && controlIndividual.value) {
+                renderControlsList(controlIndividual.value);
+            } else if (deleteType === "noise" && noiseIndividual && noiseIndividual.value) {
+                renderNoiseDataList(noiseIndividual.value);
+            }
+            
+            if (saveData()) {
+                createBackup();
+            }
+            deleteModal.classList.add("hidden");
+            itemToDelete = null;
+            deleteType = null;
+        }
+
+        // Handle edit
+        function handleEdit(id, type) {
+            if (type === "individual") {
+                const individual = individuals.find(i => i.id === id);
+                if (individual) {
+                    editingIndividualId = id;
+                    document.getElementById('individual-id').value = individual.id;
+                    document.getElementById('firstName').value = individual.firstName;
+                    document.getElementById('lastName').value = individual.lastName;
+                    document.getElementById('jobTitle').value = individual.jobTitle;
+                    document.getElementById('factoryName').value = individual.factoryName;
+                    document.getElementById('nationalCode').value = individual.nationalCode;
+                    
+                    const submitBtn = document.getElementById('individual-submit-btn');
+                    if (submitBtn) {
+                        submitBtn.innerHTML = '<i class="fas fa-user-edit ml-2"></i>ویرایش فرد';
+                    }
+                    const cancelBtn = document.getElementById('individual-cancel-btn');
+                    if (cancelBtn) {
+                        cancelBtn.classList.remove('hidden');
+                    }
+                    
+                    // Scroll to form
+                    const form = document.getElementById('individual-form');
+                    if (form) {
+                        form.scrollIntoView({ behavior: 'smooth' });
+                    }
+                }
+            } else if (type === "measurement") {
+                const measurement = measurements.find(m => m.id === id);
+                if (measurement) {
+                    editingMeasurementId = id;
+                    document.getElementById('measurement-id').value = measurement.id;
+                    document.getElementById('measurement-individual').value = measurement.individualId;
+                    document.getElementById('measurement-date').value = measurement.date;
+                    
+                    // Fill frequency inputs
+                    document.getElementById('left-ear-2000').value = measurement.leftEar.f2000 || '';
+                    document.getElementById('left-ear-3000').value = measurement.leftEar.f3000 || '';
+                    document.getElementById('left-ear-4000').value = measurement.leftEar.f4000 || '';
+                    
+                    document.getElementById('right-ear-2000').value = measurement.rightEar.f2000 || '';
+                    document.getElementById('right-ear-3000').value = measurement.rightEar.f3000 || '';
+                    document.getElementById('right-ear-4000').value = measurement.rightEar.f4000 || '';
+                    
+                    document.getElementById('measurement-notes').value = measurement.notes || '';
+                    
+                    const submitBtn = document.getElementById('measurement-submit-btn');
+                    if (submitBtn) {
+                        submitBtn.innerHTML = '<i class="fas fa-edit ml-2"></i>ویرایش اندازه‌گیری';
+                    }
+                    const cancelBtn = document.getElementById('measurement-cancel-btn');
+                    if (cancelBtn) {
+                        cancelBtn.classList.remove('hidden');
+                    }
+                    
+                    // Switch to measurements section
+                    switchSection('measurements');
+                }
+            } else if (type === "control") {
+                const control = controls.find(c => c.id === id);
+                if (control) {
+                    editingControlId = id;
+                    document.getElementById('control-id').value = control.id;
+                    document.getElementById('control-individual').value = control.individualId;
+                    document.getElementById('control-type').value = control.type;
+                    document.getElementById('control-description').value = control.description;
+                    document.getElementById('control-date').value = control.date;
+                    document.getElementById('control-status').value = control.status;
+                    
+                    const submitBtn = document.getElementById('control-submit-btn');
+                    if (submitBtn) {
+                        submitBtn.innerHTML = '<i class="fas fa-edit ml-2"></i>ویرایش کنترل';
+                    }
+                    const cancelBtn = document.getElementById('control-cancel-btn');
+                    if (cancelBtn) {
+                        cancelBtn.classList.remove('hidden');
+                    }
+                    
+                    // Switch to controls section
+                    switchSection('controls');
+                }
+            } else if (type === "noise") {
+                const noise = noiseData.find(n => n.id === id);
+                if (noise) {
+                    editingNoiseId = id;
+                    document.getElementById('noise-id').value = noise.id;
+                    document.getElementById('noise-individual').value = noise.individualId;
+                    document.getElementById('noise-type').value = noise.type;
+                    document.getElementById('noise-intensity').value = noise.intensity;
+                    document.getElementById('exposure-duration').value = noise.duration || '';
+                    document.getElementById('noise-location').value = noise.location;
+                    
+                    const submitBtn = document.getElementById('noise-submit-btn');
+                    if (submitBtn) {
+                        submitBtn.innerHTML = '<i class="fas fa-edit ml-2"></i>ویرایش داده نویز';
+                    }
+                    const cancelBtn = document.getElementById('noise-cancel-btn');
+                    if (cancelBtn) {
+                        cancelBtn.classList.remove('hidden');
+                    }
+                    
+                    // Switch to noise section
+                    switchSection('noise');
+                }
+            }
+        }
+
+        // Cancel edit functions
+        function cancelIndividualEdit() {
+            editingIndividualId = null;
+            if (individualForm) individualForm.reset();
+            const submitBtn = document.getElementById('individual-submit-btn');
+            if (submitBtn) {
+                submitBtn.innerHTML = '<i class="fas fa-user-plus ml-2"></i>ثبت فرد';
+            }
+            const cancelBtn = document.getElementById('individual-cancel-btn');
+            if (cancelBtn) {
+                cancelBtn.classList.add('hidden');
+            }
+            
+            // Clear validation errors
+            clearAllValidationErrors('individual');
+        }
+
+        function cancelMeasurementEdit() {
+            editingMeasurementId = null;
+            if (measurementForm) measurementForm.reset();
+            const submitBtn = document.getElementById('measurement-submit-btn');
+            if (submitBtn) {
+                submitBtn.innerHTML = '<i class="fas fa-chart-line ml-2"></i>افزودن اندازه‌گیری';
+            }
+            const cancelBtn = document.getElementById('measurement-cancel-btn');
+            if (cancelBtn) {
+                cancelBtn.classList.add('hidden');
+            }
+            
+            // Clear validation errors
+            clearAllValidationErrors('measurement');
+        }
+
+        function cancelControlEdit() {
+            editingControlId = null;
+            if (controlForm) controlForm.reset();
+            const submitBtn = document.getElementById('control-submit-btn');
+            if (submitBtn) {
+                submitBtn.innerHTML = '<i class="fas fa-shield-alt ml-2"></i>افزودن کنترل حفاظتی';
+            }
+            const cancelBtn = document.getElementById('control-cancel-btn');
+            if (cancelBtn) {
+                cancelBtn.classList.add('hidden');
+            }
+            
+            // Clear validation errors
+            clearAllValidationErrors('control');
+        }
+
+        function cancelNoiseEdit() {
+            editingNoiseId = null;
+            if (noiseForm) noiseForm.reset();
+            const submitBtn = document.getElementById('noise-submit-btn');
+            if (submitBtn) {
+                submitBtn.innerHTML = '<i class="fas fa-volume-up ml-2"></i>افزودن داده نویز';
+            }
+            const cancelBtn = document.getElementById('noise-cancel-btn');
+            if (cancelBtn) {
+                cancelBtn.classList.add('hidden');
+            }
+            
+            // Clear validation errors
+            clearAllValidationErrors('noise');
+        }
+
+        // Clear all validation errors for a form type
+        function clearAllValidationErrors(formType) {
+            const errors = document.querySelectorAll(`#section-${formType} .invalid-feedback`);
+            errors.forEach(error => {
+                error.style.display = 'none';
+            });
+            
+            const inputs = document.querySelectorAll(`#section-${formType} .is-invalid`);
+            inputs.forEach(input => {
+                input.classList.remove('is-invalid');
+            });
+        }
+
+        // Calculate hearing loss between measurements
+        function calculateHearingLoss(measurements) {
+            if (measurements.length < 2) return [];
+            
+            const sortedMeasurements = [...measurements].sort((a, b) => new Date(a.date) - new Date(b.date));
+            const hearingLossData = [];
+            
+            for (let i = 1; i < sortedMeasurements.length; i++) {
+                const current = sortedMeasurements[i];
+                const previous = sortedMeasurements[i - 1];
+                
+                const leftEarChange = current.leftEar.average - previous.leftEar.average;
+                const rightEarChange = current.rightEar.average - previous.rightEar.average;
+                
+                hearingLossData.push({
+                    date: current.date,
+                    leftEarAverage: current.leftEar.average,
+                    rightEarAverage: current.rightEar.average,
+                    leftEarChange: leftEarChange,
+                    rightEarChange: rightEarChange,
+                    timePeriod: `${previous.date} تا ${current.date}`
+                });
+            }
+            
+            return hearingLossData;
+        }
+
+        // Render functions for each section with pagination
+        function renderMeasurementsHistory(individualId) {
+            const container = document.getElementById("measurements-history");
+            if (!container) return;
+            
+            const individualMeasurements = measurements.filter(m => m.individualId === individualId)
+                .sort((a, b) => new Date(b.date) - new Date(a.date));
+
+            if (individualMeasurements.length === 0) {
+                container.innerHTML = "<p class='text-gray-500'>هیچ اندازه‌گیری ثبت نشده است</p>";
+                const paginationContainer = document.getElementById('measurements-pagination');
+                if (paginationContainer) {
+                    paginationContainer.innerHTML = '';
+                }
+                return;
+            }
+            
+            // Pagination
+            const totalPages = Math.ceil(individualMeasurements.length / ITEMS_PER_PAGE);
+            const startIndex = (currentPage.measurements - 1) * ITEMS_PER_PAGE;
+            const paginatedMeasurements = individualMeasurements.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+            
+            container.innerHTML = paginatedMeasurements.map(measurement => `
+                <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg border">
+                    <div class="flex justify-between items-start mb-2">
+                        <h4 class="font-semibold">${escapeHtml(measurement.date)}</h4>
+                        <div class="space-x-2 space-x-reverse">
+                            <span class="text-sm opacity-70">شناسه: ${escapeHtml(measurement.id.slice(-6))}</span>
+                            <button class="edit-btn text-accent hover:text-green-700 text-sm" data-id="${escapeHtml(measurement.id)}" data-type="measurement">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="delete-btn text-danger hover:text-red-700 text-sm" data-id="${escapeHtml(measurement.id)}" data-type="measurement">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-2">
+                        <div>
+                            <h5 class="font-medium mb-1">گوش چپ (دسی‌بل)</h5>
+                            <div class="grid grid-cols-3 gap-2 text-sm">
+                                <div>2000Hz: ${escapeHtml(measurement.leftEar.f2000 || "N/A")}</div>
+                                <div>3000Hz: ${escapeHtml(measurement.leftEar.f3000 || "N/A")}</div>
+                                <div>4000Hz: ${escapeHtml(measurement.leftEar.f4000 || "N/A")}</div>
+                            </div>
+                            <div class="mt-1 font-medium">میانگین: ${measurement.leftEar.average ? escapeHtml(measurement.leftEar.average.toFixed(1)) : "N/A"}</div>
+                        </div>
+                        <div>
+                            <h5 class="font-medium mb-1">گوش راست (دسی‌بل)</h5>
+                            <div class="grid grid-cols-3 gap-2 text-sm">
+                                <div>2000Hz: ${escapeHtml(measurement.rightEar.f2000 || "N/A")}</div>
+                                <div>3000Hz: ${escapeHtml(measurement.rightEar.f3000 || "N/A")}</div>
+                                <div>4000Hz: ${escapeHtml(measurement.rightEar.f4000 || "N/A")}</div>
+                            </div>
+                            <div class="mt-1 font-medium">میانگین: ${measurement.rightEar.average ? escapeHtml(measurement.rightEar.average.toFixed(1)) : "N/A"}</div>
+                        </div>
+                    </div>
+                    ${measurement.notes ? `<p class="text-sm"><strong>یادداشت‌ها:</strong> ${escapeHtml(measurement.notes)}</p>` : ""}
+                </div>
+            `).join("");
+            
+            // Render pagination
+            renderPagination('measurements', totalPages, currentPage.measurements);
+        }
+
+        function renderControlsList(individualId) {
+            const container = document.getElementById("controls-list");
+            if (!container) return;
+            
+            const individualControls = controls.filter(c => c.individualId === individualId)
+                .sort((a, b) => new Date(b.date) - new Date(a.date));
+
+            if (individualControls.length === 0) {
+                container.innerHTML = "<p class='text-gray-500'>هیچ کنترل حفاظتی ثبت نشده است</p>";
+                const paginationContainer = document.getElementById('controls-pagination');
+                if (paginationContainer) {
+                    paginationContainer.innerHTML = '';
+                }
+                return;
+            }
+            
+            // Pagination
+            const totalPages = Math.ceil(individualControls.length / ITEMS_PER_PAGE);
+            const startIndex = (currentPage.controls - 1) * ITEMS_PER_PAGE;
+            const paginatedControls = individualControls.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+            
+            container.innerHTML = paginatedControls.map(control => {
+                let typeText = "";
+                switch(control.type) {
+                    case "engineering":
+                        typeText = "کنترل‌های مهندسی";
+                        break;
+                    case "administrative":
+                        typeText = "کنترل‌های مدیریتی";
+                        break;
+                    case "earplugs":
+                        typeText = "گوش‌گیر";
+                        break;
+                    case "earmuffs":
+                        typeText = "هدفون محافظ";
+                        break;
+                    case "noise-canceling":
+                        typeText = "هدفون حذف نویز";
+                        break;
+                    case "other":
+                        typeText = "سایر کنترل‌ها";
+                        break;
+                    default:
+                        typeText = control.type;
+                }
+                
+                return `
+                <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg border">
+                    <div class="flex justify-between items-start mb-2">
+                        <h4 class="font-semibold">${escapeHtml(typeText)}</h4>
+                        <div class="space-x-2 space-x-reverse">
+                            <span class="text-sm px-2 py-1 rounded-full ${control.status === "active" ? "bg-green-100 text-green-800" : control.status === "inactive" ? "bg-red-100 text-red-800" : "bg-yellow-100 text-yellow-800"}">${control.status === "active" ? "فعال" : control.status === "inactive" ? "غیرفعال" : "در انتظار"}</span>
+                            <button class="edit-btn text-accent hover:text-green-700 text-sm" data-id="${escapeHtml(control.id)}" data-type="control">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="delete-btn text-danger hover:text-red-700 text-sm" data-id="${escapeHtml(control.id)}" data-type="control">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <p class="text-sm mb-2">${escapeHtml(control.description)}</p>
+                    <div class="flex justify-between text-sm opacity-70">
+                        <span>اجرا شده در: ${escapeHtml(control.date)}</span>
+                    </div>
+                </div>
+            `}).join("");
+            
+            // Render pagination
+            renderPagination('controls', totalPages, currentPage.controls);
+        }
+
+        function renderNoiseDataList(individualId) {
+            const container = document.getElementById("noise-data-list");
+            if (!container) return;
+            
+            const individualNoiseData = noiseData.filter(n => n.individualId === individualId)
+                .sort((a, b) => new Date(b.recordedDate) - new Date(a.recordedDate));
+
+            if (individualNoiseData.length === 0) {
+                container.innerHTML = "<p class='text-gray-500'>هیچ داده مواجهه با نویز ثبت نشده است</p>";
+                const paginationContainer = document.getElementById('noise-pagination');
+                if (paginationContainer) {
+                    paginationContainer.innerHTML = '';
+                }
+                return;
+            }
+            
+            // Pagination
+            const totalPages = Math.ceil(individualNoiseData.length / ITEMS_PER_PAGE);
+            const startIndex = (currentPage.noise - 1) * ITEMS_PER_PAGE;
+            const paginatedNoiseData = individualNoiseData.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+            
+            container.innerHTML = paginatedNoiseData.map(noise => `
+                <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg border">
+                    <div class="flex justify-between items-start mb-2">
+                        <h4 class="font-semibold">${escapeHtml(noise.type)}</h4>
+                        <div class="space-x-2 space-x-reverse">
+                            <span class="text-sm opacity-70">${escapeHtml(noise.recordedDate)}</span>
+                            <button class="edit-btn text-accent hover:text-green-700 text-sm" data-id="${escapeHtml(noise.id)}" data-type="noise">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="delete-btn text-danger hover:text-red-700 text-sm" data-id="${escapeHtml(noise.id)}" data-type="noise">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4 mb-2">
+                        <div>
+                            <span class="text-sm opacity-70">شدت:</span>
+                            <span class="font-medium mr-2">${escapeHtml(noise.intensity)} دسی‌بل</span>
+                        </div>
+                        <div>
+                            <span class="text-sm opacity-70">مدت:</span>
+                            <span class="font-medium mr-2">${noise.duration ? escapeHtml(noise.duration) : "N/A"} ساعت</span>
+                        </div>
+                    </div>
+                    ${noise.location ? `<p class="text-sm"><strong>موقعیت:</strong> ${escapeHtml(noise.location)}</p>` : ""}
+                </div>
+            `).join("");
+            
+            // Render pagination
+            renderPagination('noise', totalPages, currentPage.noise);
+        }
+
+        // Generate PDF report using jsPDF and html2canvas
+        function generatePDF() {
+            const individualId = exportIndividual ? exportIndividual.value : '';
+            if (!individualId) {
+                showNotification("لطفاً یک فرد را انتخاب کنید", "error");
+                return;
+            }
+
+            const individual = individuals.find(i => i.id === individualId);
+            if (!individual) {
+                showNotification("فرد یافت نشد", "error");
+                return;
+            }
+
+            // Show loading state
+            const pdfLoading = document.getElementById('pdf-loading');
+            const generateBtn = document.getElementById('generate-pdf');
+            if (pdfLoading) pdfLoading.classList.remove('hidden');
+            if (generateBtn) generateBtn.disabled = true;
+
+            try {
+                const individualMeasurements = measurements.filter(m => m.individualId === individualId)
+                    .sort((a, b) => new Date(a.date) - new Date(b.date));
+                const individualControls = controls.filter(c => c.individualId === individualId);
+                const individualNoiseData = noiseData.filter(n => n.individualId === individualId);
+                
+                // Calculate hearing loss
+                const hearingLossData = calculateHearingLoss(individualMeasurements);
+
+                // Build PDF content
+                const reportContent = buildPDFContent(individual, individualMeasurements, individualControls, individualNoiseData, hearingLossData);
+                
+                // Set the content to the hidden PDF container
+                if (pdfReportContainer) {
+                    pdfReportContainer.innerHTML = reportContent;
+                    pdfReportContainer.classList.remove('hidden');
+                }
+                
+                // Use html2canvas to capture the content
+                html2canvas(pdfReportContainer, {
+                    scale: 2,
+                    useCORS: true,
+                    logging: false
+                }).then(canvas => {
+                    // Create PDF from canvas
+                    const imgData = canvas.toDataURL('image/png');
+                    const { jsPDF } = window.jspdf;
+                    const pdf = new jsPDF('p', 'mm', 'a4');
+                    const imgWidth = 210; // A4 width in mm
+                    const pageHeight = 295; // A4 height in mm
+                    const imgHeight = canvas.height * imgWidth / canvas.width;
+                    let heightLeft = imgHeight;
+                    let position = 0;
+                    let pageNum = 1;
+
+                    // Add first page
+                    pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+                    heightLeft -= pageHeight;
+
+                    // Add additional pages if needed
+                    while (heightLeft >= 0) {
+                        position = heightLeft - imgHeight;
+                        pdf.addPage();
+                        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+                        heightLeft -= pageHeight;
+                    }
+
+                    // Save the PDF
+                    pdf.save(`hearing-protection-${individual.firstName}-${individual.lastName}.pdf`);
+                    
+                    // Hide the PDF container
+                    if (pdfReportContainer) {
+                        pdfReportContainer.classList.add('hidden');
+                    }
+                    pdfModal.classList.add("hidden");
+                    showNotification("PDF با موفقیت تولید شد", "success");
+                }).catch(error => {
+                    console.error('Error generating PDF:', error);
+                    showNotification("خطا در تولید PDF", "error");
+                });
+            } catch (error) {
+                console.error('Error generating PDF:', error);
+                showNotification("خطا در تولید PDF", "error");
+            } finally {
+                if (pdfLoading) pdfLoading.classList.add('hidden');
+                if (generateBtn) generateBtn.disabled = false;
+            }
+        }
+
+        // Build PDF content HTML - IMPROVED PRINT-FRIENDLY VERSION
+        function buildPDFContent(individual, measurements, controls, noiseData, hearingLossData) {
+            // Sort measurements by date
+            const sortedMeasurements = [...measurements].sort((a, b) => new Date(a.date) - new Date(b.date));
+            
+            // Prepare chart data
+            const chartData = sortedMeasurements.map(m => ({
+                date: m.date,
+                leftEar: m.leftEar.average,
+                rightEar: m.rightEar.average
+            }));
+
+            // Create chart HTML
+            const chartHTML = createLineChart(chartData);
+
+            // Calculate page breaks for better print layout
+            const hasMeasurements = measurements.length > 0;
+            const hasHearingLoss = hearingLossData.length > 0;
+            const hasControls = controls.length > 0;
+            const hasNoiseData = noiseData.length > 0;
+
+            return `
+                <div class="pdf-report">
+                    <!-- Page 1: Individual Info and Chart -->
+                    <div class="pdf-page no-break">
+                        <div class="pdf-header">
+                            <h1>گزارش برنامه حفاظت شنوایی</h1>
+                            <p>تولید شده در: ${new Date().toLocaleDateString('fa-IR')}</p>
+                        </div>
+                        
+                        <div class="pdf-section">
+                            <h2>اطلاعات فرد</h2>
+                            <table class="pdf-table">
+                                <tr>
+                                    <th>نام و نام خانوادگی</th>
+                                    <td>${escapeHtml(individual.firstName)} ${escapeHtml(individual.lastName)}</td>
+                                </tr>
+                                <tr>
+                                    <th>عنوان شغلی</th>
+                                    <td>${escapeHtml(individual.jobTitle)}</td>
+                                </tr>
+                                <tr>
+                                    <th>نام کارخانه</th>
+                                    <td>${escapeHtml(individual.factoryName)}</td>
+                                </tr>
+                                <tr>
+                                    <th>کد ملی</th>
+                                    <td>${escapeHtml(individual.nationalCode)}</td>
+                                </tr>
+                                <tr>
+                                    <th>تاریخ ثبت</th>
+                                    <td>${escapeHtml(individual.registrationDate)}</td>
+                                </tr>
+                            </table>
+                        </div>
+                        
+                        <div class="pdf-section">
+                            <h2>نمودار روند تغییرات شنوایی</h2>
+                            ${hasMeasurements ? 
+                                chartHTML
+                                : '<p>هیچ اندازه‌گیری شنوایی برای نمایش نمودار ثبت نشده است</p>'
+                            }
+                        </div>
+                        
+                        <div class="pdf-footer">
+                            <p>سیستم مدیریت برنامه حفاظت شنوایی - کلیه حقوق محفوظ است © ${new Date().getFullYear()}</p>
+                            <div class="page-number">صفحه 1</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Page 2: Measurements Data -->
+                    ${hasMeasurements ? `
+                    <div class="pdf-page no-break">
+                        <div class="pdf-header">
+                            <h1>داده‌های اندازه‌گیری‌ها</h1>
+                            <p>${escapeHtml(individual.firstName)} ${escapeHtml(individual.lastName)}</p>
+                        </div>
+                        
+                        <div class="pdf-section">
+                            <h2>داده‌های اندازه‌گیری‌ها</h2>
+                            <table class="pdf-table">
+                                <thead>
+                                    <tr>
+                                        <th>تاریخ</th>
+                                        <th>گوش چپ 2000Hz</th>
+                                        <th>گوش چپ 3000Hz</th>
+                                        <th>گوش چپ 4000Hz</th>
+                                        <th>میانگین چپ</th>
+                                        <th>گوش راست 2000Hz</th>
+                                        <th>گوش راست 3000Hz</th>
+                                        <th>گوش راست 4000Hz</th>
+                                        <th>میانگین راست</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${sortedMeasurements.map(m => `
+                                        <tr>
+                                            <td>${escapeHtml(m.date)}</td>
+                                            <td>${escapeHtml(m.leftEar.f2000 || "N/A")}</td>
+                                            <td>${escapeHtml(m.leftEar.f3000 || "N/A")}</td>
+                                            <td>${escapeHtml(m.leftEar.f4000 || "N/A")}</td>
+                                            <td>${m.leftEar.average ? escapeHtml(m.leftEar.average.toFixed(1)) : "N/A"}</td>
+                                            <td>${escapeHtml(m.rightEar.f2000 || "N/A")}</td>
+                                            <td>${escapeHtml(m.rightEar.f3000 || "N/A")}</td>
+                                            <td>${escapeHtml(m.rightEar.f4000 || "N/A")}</td>
+                                            <td>${m.rightEar.average ? escapeHtml(m.rightEar.average.toFixed(1)) : "N/A"}</td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        ${hasHearingLoss ? `
+                        <div class="pdf-section">
+                            <h2>تحلیل افت شنوایی</h2>
+                            <table class="pdf-table">
+                                <thead>
+                                    <tr>
+                                        <th>بازه زمانی</th>
+                                        <th>میانگین گوش چپ</th>
+                                        <th>تغییر گوش چپ</th>
+                                        <th>میانگین گوش راست</th>
+                                        <th>تغییر گوش راست</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${hearingLossData.map(data => `
+                                        <tr>
+                                            <td>${escapeHtml(data.timePeriod)}</td>
+                                            <td>${data.leftEarAverage ? escapeHtml(data.leftEarAverage.toFixed(1)) : "N/A"}</td>
+                                            <td class="${data.leftEarChange > 0 ? 'positive-change' : data.leftEarChange < 0 ? 'negative-change' : ''}">
+                                                ${data.leftEarChange ? `${data.leftEarChange > 0 ? '+' : ''}${escapeHtml(data.leftEarChange.toFixed(1))} دسی‌بل` : "N/A"}
+                                            </td>
+                                            <td>${data.rightEarAverage ? escapeHtml(data.rightEarAverage.toFixed(1)) : "N/A"}</td>
+                                            <td class="${data.rightEarChange > 0 ? 'positive-change' : data.rightEarChange < 0 ? 'negative-change' : ''}">
+                                                ${data.rightEarChange ? `${data.rightEarChange > 0 ? '+' : ''}${escapeHtml(data.rightEarChange.toFixed(1))} دسی‌بل` : "N/A"}
+                                            </td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                            <p style="font-size: 10px; margin-top: 8px;">توضیح: اعداد مثبت نشان‌دهنده افت شنوایی و اعداد منفی نشان‌دهنده بهبود شنوایی هستند.</p>
+                        </div>
+                        ` : ''}
+                        
+                        <div class="pdf-footer">
+                            <p>سیستم مدیریت برنامه حفاظت شنوایی - کلیه حقوق محفوظ است © ${new Date().getFullYear()}</p>
+                            <div class="page-number">صفحه 2</div>
+                        </div>
+                    </div>
+                    ` : ''}
+                    
+                    <!-- Page 3: Controls and Noise Data -->
+                    ${(hasControls || hasNoiseData) ? `
+                    <div class="pdf-page no-break">
+                        <div class="pdf-header">
+                            <h1>کنترل‌ها و داده‌های نویز</h1>
+                            <p>${escapeHtml(individual.firstName)} ${escapeHtml(individual.lastName)}</p>
+                        </div>
+                        
+                        ${hasControls ? `
+                        <div class="pdf-section">
+                            <h2>کنترل‌های حفاظتی</h2>
+                            ${controls.map(control => {
+                                let typeText = "";
+                                switch(control.type) {
+                                    case "engineering":
+                                        typeText = "کنترل‌های مهندسی";
+                                        break;
+                                    case "administrative":
+                                        typeText = "کنترل‌های مدیریتی";
+                                        break;
+                                    case "earplugs":
+                                        typeText = "گوش‌گیر";
+                                        break;
+                                    case "earmuffs":
+                                        typeText = "هدفون محافظ";
+                                        break;
+                                    case "noise-canceling":
+                                        typeText = "هدفون حذف نویز";
+                                        break;
+                                    case "other":
+                                        typeText = "سایر کنترل‌ها";
+                                        break;
+                                    default:
+                                        typeText = control.type;
+                                }
+                                
+                                return `
+                                <div style="margin-bottom: 12px; padding: 8px; border: 1px solid #ddd; border-radius: 4px; background: #f8fafc;">
+                                    <h3 style="margin: 0 0 4px 0; color: #3b82f6; font-size: 11px;">${escapeHtml(typeText)} - <span style="color: ${control.status === "active" ? "#10b981" : control.status === "inactive" ? "#ef4444" : "#f59e0b"}">${control.status === "active" ? "فعال" : control.status === "inactive" ? "غیرفعال" : "در انتظار"}</span></h3>
+                                    <p style="margin: 0 0 4px 0; font-size: 10px;"><strong>تاریخ:</strong> ${escapeHtml(control.date)}</p>
+                                    <p style="margin: 0; font-size: 10px;"><strong>توضیحات:</strong> ${escapeHtml(control.description)}</p>
+                                </div>
+                            `}).join('')}
+                        </div>
+                        ` : ''}
+                        
+                        ${hasNoiseData ? `
+                        <div class="pdf-section">
+                            <h2>سوابق مواجهه با نویز</h2>
+                            <table class="pdf-table">
+                                <thead>
+                                    <tr>
+                                        <th>نوع نویز</th>
+                                        <th>شدت (دسی‌بل)</th>
+                                        <th>مدت مواجهه (ساعت)</th>
+                                        <th>موقعیت</th>
+                                        <th>تاریخ ثبت</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${noiseData.map(noise => `
+                                        <tr>
+                                            <td>${escapeHtml(noise.type)}</td>
+                                            <td>${escapeHtml(noise.intensity)}</td>
+                                            <td>${noise.duration ? escapeHtml(noise.duration) : "N/A"}</td>
+                                            <td>${escapeHtml(noise.location)}</td>
+                                            <td>${escapeHtml(noise.recordedDate)}</td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                        ` : ''}
+                        
+                        <div class="pdf-footer">
+                            <p>سیستم مدیریت برنامه حفاظت شنوایی - کلیه حقوق محفوظ است © ${new Date().getFullYear()}</p>
+                            <div class="page-number">صفحه ${hasMeasurements ? '3' : '2'}</div>
+                        </div>
+                    </div>
+                    ` : ''}
+                </div>
+            `;
+        }
+
+        // تابع برای ایجاد نمودار خطی
+        function createLineChart(data) {
+            if (data.length === 0) return '<p>داده‌ای برای نمایش موجود نیست</p>';
+            
+            // محاسبه مقادیر برای نمودار
+            const allValues = data.flatMap(d => [d.leftEar, d.rightEar]).filter(v => v !== null && !isNaN(v));
+            if (allValues.length === 0) return '<p>داده‌های معتبر برای نمودار موجود نیست</p>';
+            
+            const minValue = Math.min(...allValues);
+            const maxValue = Math.max(...allValues);
+            const valueRange = maxValue - minValue || 1; // جلوگیری از تقسیم بر صفر
+            
+            // تنظیمات نمودار
+            const chartHeight = 200;
+            const chartWidth = 550;
+            const padding = { top: 40, right: 40, bottom: 50, left: 40 };
+            
+            // ایجاد نقاط برای خطوط
+            const leftEarPoints = data.map((d, i) => {
+                if (d.leftEar === null || isNaN(d.leftEar)) return null;
+                const x = padding.left + (i * (chartWidth - padding.left - padding.right) / (data.length - 1 || 1));
+                const y = chartHeight - padding.bottom - ((d.leftEar - minValue) / valueRange * (chartHeight - padding.top - padding.bottom));
+                return { x, y, value: d.leftEar };
+            }).filter(point => point !== null);
+            
+            const rightEarPoints = data.map((d, i) => {
+                if (d.rightEar === null || isNaN(d.rightEar)) return null;
+                const x = padding.left + (i * (chartWidth - padding.left - padding.right) / (data.length - 1 || 1));
+                const y = chartHeight - padding.bottom - ((d.rightEar - minValue) / valueRange * (chartHeight - padding.top - padding.bottom));
+                return { x, y, value: d.rightEar };
+            }).filter(point => point !== null);
+            
+            // ایجاد خطوط SVG
+            const leftEarPath = createPathString(leftEarPoints);
+            const rightEarPath = createPathString(rightEarPoints);
+            
+            return `
+                <div class="chart-container">
+                    <div class="chart-title">روند تغییرات شنوایی بر اساس زمان</div>
+                    <div style="direction: ltr; width: 100%; margin: 15px 0; display: flex; justify-content: center;">
+                        <svg width="${chartWidth}" height="${chartHeight}" style="border: 1px solid #ddd; background: white; border-radius: 4px;">
+                            <!-- خطوط راهنما -->
+                            ${Array.from({length: 5}, (_, i) => {
+                                const y = padding.top + (i * (chartHeight - padding.top - padding.bottom) / 4);
+                                const value = maxValue - (i * valueRange / 4);
+                                return `
+                                    <line x1="${padding.left}" y1="${y}" x2="${chartWidth - padding.right}" y2="${y}" stroke="#e0e0e0" stroke-width="1" />
+                                    <text x="${padding.left - 8}" y="${y + 3}" text-anchor="end" font-size="10" fill="#666">${value.toFixed(0)}</text>
+                                `;
+                            }).join('')}
+                            
+                            <!-- محورها -->
+                            <line x1="${padding.left}" y1="${padding.top}" x2="${padding.left}" y2="${chartHeight - padding.bottom}" stroke="#333" stroke-width="1.5" />
+                            <line x1="${padding.left}" y1="${chartHeight - padding.bottom}" x2="${chartWidth - padding.right}" y2="${chartHeight - padding.bottom}" stroke="#333" stroke-width="1.5" />
+                            
+                            <!-- خطوط نمودار -->
+                            <path d="${leftEarPath}" fill="none" stroke="#ef4444" stroke-width="2" />
+                            <path d="${rightEarPath}" fill="none" stroke="#3b82f6" stroke-width="2" />
+                            
+                            <!-- نقاط و برچسب‌های گوش چپ -->
+                            ${leftEarPoints.map(point => `
+                                <circle cx="${point.x}" cy="${point.y}" r="4" fill="#ef4444" />
+                                <text x="${point.x}" y="${point.y - 8}" text-anchor="middle" font-size="9" fill="#ef4444">${point.value.toFixed(1)}</text>
+                            `).join('')}
+                            
+                            <!-- نقاط و برچسب‌های گوش راست -->
+                            ${rightEarPoints.map(point => `
+                                <circle cx="${point.x}" cy="${point.y}" r="4" fill="#3b82f6" />
+                                <text x="${point.x}" y="${point.y - 8}" text-anchor="middle" font-size="9" fill="#3b82f6">${point.value.toFixed(1)}</text>
+                            `).join('')}
+                            
+                            <!-- برچسب‌های تاریخ -->
+                            ${data.map((d, i) => {
+                                const x = padding.left + (i * (chartWidth - padding.left - padding.right) / (data.length - 1 || 1));
+                                return `
+                                    <text x="${x}" y="${chartHeight - padding.bottom + 15}" text-anchor="middle" font-size="9" fill="#666">${d.date}</text>
+                                `;
+                            }).join('')}
+                            
+                            <!-- برچسب محورها -->
+                            <text x="${chartWidth / 2}" y="${chartHeight - 8}" text-anchor="middle" font-size="10" fill="#666">تاریخ اندازه‌گیری</text>
+                            <text x="12" y="${chartHeight / 2}" text-anchor="middle" font-size="10" fill="#666" transform="rotate(-90 12 ${chartHeight / 2})">میانگین شنوایی (دسی‌بل)</text>
+                        </svg>
+                    </div>
+                    <!-- راهنمای نمودار - انتقال به پایین نمودار -->
+                    <div style="display: flex; justify-content: center; margin-top: 15px; gap: 25px;">
+                        <div style="display: flex; align-items: center;">
+                            <div style="width: 15px; height: 4px; background-color: #ef4444; margin-left: 8px;"></div>
+                            <span style="font-size: 11px;">گوش چپ</span>
+                        </div>
+                        <div style="display: flex; align-items: center;">
+                            <div style="width: 15px; height: 4px; background-color: #3b82f6; margin-left: 8px;"></div>
+                            <span style="font-size: 11px;">گوش راست</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // تابع کمکی برای ایجاد رشته مسیر SVG
+        function createPathString(points) {
+            if (points.length === 0) return '';
+            
+            let path = `M ${points[0].x} ${points[0].y}`;
+            for (let i = 1; i < points.length; i++) {
+                path += ` L ${points[i].x} ${points[i].y}`;
+            }
+            return path;
+        }
+
+        // XSS protection
+        function escapeHtml(unsafe) {
+            if (!unsafe) return '';
+            return unsafe
+                .toString()
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        // Notification system
+        function showNotification(message, type = "info") {
+            // Remove any existing notifications
+            const existingNotifications = document.querySelectorAll('.notification');
+            existingNotifications.forEach(notification => notification.remove());
+            
+            const notification = document.createElement("div");
+            notification.className = `notification ${type}`;
+            notification.textContent = message;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.parentNode.removeChild(notification);
+                }
+            }, 3000);
+        }
+
+        // Login and Registration functions
+        function handleLogin(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            // Validate fields
+            if (!username || !password) {
+                showNotification("لطفا نام کاربری و رمز عبور را وارد کنید", "error");
+                return;
+            }
+            
+            // Find user - FIX: Make sure we're using the correct users array
+            const user = users.find(u => u.username === username && u.password === password);
+            
+            if (user) {
+                // Successful login
+                localStorage.setItem('hearingAppLoggedIn', 'true');
+                localStorage.setItem('currentUser', username);
+                loginPage.classList.add('hidden');
+                mainApp.classList.remove('hidden');
+                initApp();
+            } else {
+                // Failed login
+                if (loginError) {
+                    loginError.style.display = 'block';
+                    setTimeout(() => {
+                        loginError.style.display = 'none';
+                    }, 3000);
+                }
+            }
+        }
+
+        function handleRegister(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('new-username').value;
+            const password = document.getElementById('new-password').value;
+            const confirmPassword = document.getElementById('confirm-password').value;
+            
+            // Validate all fields
+            let isValid = true;
+            const registerFields = ['new-username', 'new-password', 'confirm-password'];
+            registerFields.forEach(field => {
+                const input = document.getElementById(field);
+                const error = document.getElementById(`${field}-error`);
+                if (input && error && !validateRegisterField(input, error)) {
+                    isValid = false;
+                }
+            });
+            
+            if (!isValid) {
+                showNotification("لطفا تمام فیلدها را به درستی پر کنید", "error");
+                return;
+            }
+            
+            // Check if passwords match
+            if (password !== confirmPassword) {
+                if (registerError) {
+                    registerError.textContent = "رمز عبور و تکرار آن مطابقت ندارند";
+                    registerError.style.display = 'block';
+                }
+                return;
+            }
+            
+            // Check if username already exists
+            const userExists = users.find(u => u.username === username);
+            if (userExists) {
+                if (registerError) {
+                    registerError.textContent = "این نام کاربری قبلاً استفاده شده است";
+                    registerError.style.display = 'block';
+                }
+                return;
+            }
+            
+            // Create new user
+            const newUser = {
+                username,
+                password,
+                createdAt: new Date().toISOString()
+            };
+            
+            // Update users array and save to localStorage
+            users.push(newUser);
+            localStorage.setItem(USERS_KEY, JSON.stringify(users));
+            
+            // Show success message
+            if (registerError) {
+                registerError.style.display = 'none';
+            }
+            if (registerSuccess) {
+                registerSuccess.classList.remove('hidden');
+            }
+            
+            // Reset form
+            if (registerForm) {
+                registerForm.reset();
+            }
+            
+            // Switch to login form after 2 seconds
+            setTimeout(() => {
+                showLoginForm();
+                if (registerSuccess) {
+                    registerSuccess.classList.add('hidden');
+                }
+            }, 2000);
+        }
+
+        function showRegisterForm() {
+            if (loginFormContainer) loginFormContainer.classList.add('hidden');
+            if (registerFormContainer) registerFormContainer.classList.remove('hidden');
+            if (registerForm) registerForm.reset();
+            if (registerError) registerError.style.display = 'none';
+            if (registerSuccess) registerSuccess.classList.add('hidden');
+        }
+
+        function showLoginForm() {
+            if (registerFormContainer) registerFormContainer.classList.add('hidden');
+            if (loginFormContainer) loginFormContainer.classList.remove('hidden');
+            if (loginForm) loginForm.reset();
+            if (loginError) loginError.style.display = 'none';
+        }
+
+        function handleLogout() {
+            localStorage.removeItem('hearingAppLoggedIn');
+            localStorage.removeItem('currentUser');
+            loginPage.classList.remove('hidden');
+            mainApp.classList.add('hidden');
+            if (loginForm) loginForm.reset();
+            showLoginForm();
+        }
+
+        // Initialize the application
+        document.addEventListener("DOMContentLoaded", function() {
+            // Set up login page event listeners
+            if (loginForm) loginForm.addEventListener("submit", handleLogin);
+            if (registerForm) registerForm.addEventListener("submit", handleRegister);
+            if (switchToRegister) switchToRegister.addEventListener("click", showRegisterForm);
+            if (switchToLogin) switchToLogin.addEventListener("click", showLoginForm);
+            if (loginThemeToggle) loginThemeToggle.addEventListener("click", toggleTheme);
+            
+            const isLoggedIn = localStorage.getItem('hearingAppLoggedIn') === 'true';
+            
+            if (isLoggedIn) {
+                loginPage.classList.add('hidden');
+                mainApp.classList.remove('hidden');
+                initApp();
+            }
+        });
+    </script>
+</body>
+</html>
